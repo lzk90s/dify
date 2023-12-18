@@ -76,6 +76,7 @@ const ModelPage = () => {
       config.xinference,
       config.openllm,
       config.localai,
+      config.tuya_openai,
     ]
   }
   else {
@@ -95,6 +96,7 @@ const ModelPage = () => {
       config.xinference,
       config.openllm,
       config.localai,
+      config.tuya_openai,
     ]
   }
 

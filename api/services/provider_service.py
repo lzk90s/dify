@@ -8,9 +8,9 @@ from typing import Optional
 import requests
 
 from core.model_providers.model_factory import ModelFactory
-from extensions.ext_database import db
 from core.model_providers.model_provider_factory import ModelProviderFactory
 from core.model_providers.models.entity.model_params import ModelType, ModelKwargsRules
+from extensions.ext_database import db
 from models.provider import Provider, ProviderModel, TenantPreferredModelProvider, ProviderType, ProviderQuotaType, \
     TenantDefaultModel
 
@@ -145,7 +145,7 @@ class ProviderService:
                     # if custom
                     key = ProviderType.CUSTOM.value
                     provider_parameter_dict[key]['last_used'] = int(provider.last_used.timestamp()) \
-                            if provider.last_used else None
+                        if provider.last_used else None
                     provider_parameter_dict[key]['is_valid'] = provider.is_valid
 
                     if model_provider_rule['model_flexibility'] == 'fixed':
@@ -495,7 +495,8 @@ class ProviderService:
 
                 if provider.provider_type == ProviderType.SYSTEM.value:
                     valid_model_dict['model_provider']['quota_type'] = provider.quota_type
-                    valid_model_dict['model_provider']['quota_unit'] = model_provider_rule['system_config']['quota_unit']
+                    valid_model_dict['model_provider']['quota_unit'] = model_provider_rule['system_config'][
+                        'quota_unit']
                     valid_model_dict['model_provider']['quota_limit'] = provider.quota_limit
                     valid_model_dict['model_provider']['quota_used'] = provider.quota_used
 
@@ -533,7 +534,8 @@ class ProviderService:
             'Content-Type': 'application/json',
             'Authorization': f"Bearer {api_key}"
         }
-        response = requests.post(api_url, headers=headers, json={'workspace_id': tenant_id, 'provider_name': provider_name})
+        response = requests.post(api_url, headers=headers,
+                                 json={'workspace_id': tenant_id, 'provider_name': provider_name})
         if not response.ok:
             logging.error(f"Request FREE QUOTA APPLY SERVER Error: {response.status_code} ")
             raise ValueError(f"Error: {response.status_code} ")

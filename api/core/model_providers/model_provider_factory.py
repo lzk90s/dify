@@ -78,6 +78,9 @@ class ModelProviderFactory:
         elif provider_name == 'jina':
             from core.model_providers.providers.jina_provider import JinaProvider
             return JinaProvider
+        elif provider_name == 'tuya_openai':
+            from core.model_providers.providers.tuya_openai_provider import TuyaOpenAIProvider
+            return TuyaOpenAIProvider
         else:
             raise NotImplementedError
 
@@ -141,11 +144,11 @@ class ModelProviderFactory:
             if ProviderType.CUSTOM.value in support_provider_types:
                 custom_provider = db.session.query(Provider) \
                     .filter(
-                        Provider.tenant_id == tenant_id,
-                        Provider.provider_name == model_provider_name,
-                        Provider.provider_type == ProviderType.CUSTOM.value,
-                        Provider.is_valid == True
-                    ).first()
+                    Provider.tenant_id == tenant_id,
+                    Provider.provider_name == model_provider_name,
+                    Provider.provider_type == ProviderType.CUSTOM.value,
+                    Provider.is_valid == True
+                ).first()
 
                 if custom_provider:
                     return ProviderType.CUSTOM.value
@@ -175,10 +178,10 @@ class ModelProviderFactory:
         # get providers by preferred provider type
         providers = db.session.query(Provider) \
             .filter(
-                Provider.tenant_id == tenant_id,
-                Provider.provider_name == model_provider_name,
-                Provider.provider_type == preferred_provider_type
-            ).all()
+            Provider.tenant_id == tenant_id,
+            Provider.provider_name == model_provider_name,
+            Provider.provider_type == preferred_provider_type
+        ).all()
 
         no_system_provider = False
         if preferred_provider_type == ProviderType.SYSTEM.value:
@@ -249,10 +252,10 @@ class ModelProviderFactory:
                     db.session.rollback()
                     provider = db.session.query(Provider) \
                         .filter(
-                            Provider.tenant_id == tenant_id,
-                            Provider.provider_name == model_provider_name,
-                            Provider.provider_type == ProviderType.CUSTOM.value
-                        ).first()
+                        Provider.tenant_id == tenant_id,
+                        Provider.provider_name == model_provider_name,
+                        Provider.provider_type == ProviderType.CUSTOM.value
+                    ).first()
 
                 return provider
 
@@ -273,4 +276,5 @@ class ModelProviderFactory:
             TenantPreferredModelProvider.provider_name == model_provider_name
         ).first()
 
-        return cls.get_preferred_type_by_preferred_model_provider(tenant_id, model_provider_name, preferred_model_provider)
+        return cls.get_preferred_type_by_preferred_model_provider(tenant_id, model_provider_name,
+                                                                  preferred_model_provider)

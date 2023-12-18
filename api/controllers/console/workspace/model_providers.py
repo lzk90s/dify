@@ -1,5 +1,4 @@
 from flask_login import current_user
-from libs.login import login_required
 from flask_restful import Resource, reqparse
 from werkzeug.exceptions import Forbidden
 
@@ -9,8 +8,9 @@ from controllers.console.setup import setup_required
 from controllers.console.wraps import account_initialization_required
 from core.model_providers.error import LLMBadRequestError
 from core.model_providers.providers.base import CredentialsValidateFailedError
-from services.provider_service import ProviderService
+from libs.login import login_required
 from services.billing_service import BillingService
+from services.provider_service import ProviderService
 
 
 class ModelProviderListApi(Resource):

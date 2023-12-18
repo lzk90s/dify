@@ -15,5 +15,6 @@
   "openllm",
   "localai",
   "cohere",
-  "jina"
+  "jina",
+  "tuya_openai"
 ]

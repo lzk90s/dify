@@ -15,6 +15,7 @@ import zhipuai from './zhipuai'
 import baichuan from './baichuan'
 import cohere from './cohere'
 import jina from './jina'
+import tuya_openai from './tuya_openai'
 
 export default {
   openai,
@@ -34,4 +35,5 @@ export default {
   baichuan,
   cohere,
   jina,
+  tuya_openai,
 }
