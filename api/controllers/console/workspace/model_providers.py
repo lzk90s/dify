@@ -103,6 +103,11 @@ class ModelProviderUpdateApi(Resource):
             provider_name=provider_name
         )
 
+        provider_service.delete_all_custom_provider_model(
+            tenant_id=current_user.current_tenant_id,
+            provider_name=provider_name
+        )
+
         return {'result': 'success'}, 204
 
 

@@ -25,7 +25,7 @@ class TuyaOpenAIProvider(AzureOpenAIProvider):
         """
         Returns the name of a provider.
         """
-        return 'tuya'
+        return 'tuya_openai'
 
     def get_model_class(self, model_type: ModelType) -> Type[BaseProviderModel]:
         """
@@ -42,6 +42,10 @@ class TuyaOpenAIProvider(AzureOpenAIProvider):
             raise NotImplementedError
 
         return model_class
+
+    @classmethod
+    def encrypt_provider_credentials(cls, tenant_id: str, credentials: dict) -> dict:
+        return credentials
 
     @classmethod
     def is_model_credentials_valid_or_raise(cls, model_name: str, model_type: ModelType, credentials: dict):

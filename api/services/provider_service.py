@@ -363,6 +363,23 @@ class ProviderService:
             db.session.add(provider_model)
             db.session.commit()
 
+    def delete_all_custom_provider_model(self,
+                                         tenant_id: str,
+                                         provider_name: str) -> None:
+        """
+        delete all provider model
+        """
+        provider_models = db.session.query(ProviderModel) \
+            .filter(
+            ProviderModel.tenant_id == tenant_id,
+            ProviderModel.provider_name == provider_name
+        ).all()
+
+        if provider_models:
+            for provider_model in provider_models:
+                db.session.delete(provider_model)
+            db.session.commit()
+
     def delete_custom_provider_model(self,
                                      tenant_id: str,
                                      provider_name: str,
