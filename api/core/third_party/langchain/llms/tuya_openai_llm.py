@@ -44,5 +44,6 @@ class EnhanceTuyaChatAI(EnhanceAzureChatOpenAI):
         """Get the default parameters for calling OpenAI API."""
         return {
             **super()._default_params,
-            'sceneId': self.scene_id
+            'sceneId': self.scene_id,
+            'maxTokens': self.max_tokens,
         }
