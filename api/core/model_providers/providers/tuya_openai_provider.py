@@ -98,7 +98,8 @@ class TuyaOpenAIProvider(AzureOpenAIProvider):
                     chunk_size=16,
                     max_retries=1,
                     openai_api_key=credentials['openai_api_key'],
-                    openai_api_base=credentials['openai_api_base']
+                    openai_api_base=credentials['openai_api_base'],
+                    scene_id=credentials.get('scene_id'),
                 )
 
                 client.embed_query('hi')

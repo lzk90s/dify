@@ -1,33 +1,26 @@
 import logging
+from typing import Any
 
 import openai
 
 from core.model_providers.error import LLMBadRequestError, LLMAuthorizationError, LLMRateLimitError, \
     LLMAPIUnavailableError, LLMAPIConnectionError
-from core.model_providers.models.embedding.azure_openai_embedding import AZURE_OPENAI_API_VERSION
-from core.model_providers.models.embedding.base import BaseEmbedding
-from core.model_providers.providers.base import BaseModelProvider
+from core.model_providers.models.embedding.azure_openai_embedding import AZURE_OPENAI_API_VERSION, AzureOpenAIEmbedding
 from core.third_party.langchain.embeddings.tuya_openai_embedding import EnhanceTuyaOpenAIEmbeddings
 
 
-class TuyaOpenAIEmbedding(BaseEmbedding):
-    def __init__(self, model_provider: BaseModelProvider, name: str):
-        self.credentials = model_provider.get_model_credentials(
-            model_name=name,
-            model_type=self.type
-        )
-
-        client = EnhanceTuyaOpenAIEmbeddings(
-            deployment=name,
+class TuyaOpenAIEmbedding(AzureOpenAIEmbedding):
+    def _init_client(self) -> Any:
+        return EnhanceTuyaOpenAIEmbeddings(
+            deployment=self.name,
             openai_api_type='azure',
             openai_api_version=AZURE_OPENAI_API_VERSION,
             chunk_size=16,
             max_retries=1,
             openai_api_key=self.credentials.get('openai_api_key'),
-            openai_api_base=self.credentials.get('openai_api_base')
+            openai_api_base=self.credentials.get('openai_api_base'),
+            scene_id=self.credentials.get('scene_id'),
         )
-
-        super().__init__(model_provider, client, name)
 
     def handle_exceptions(self, ex: Exception) -> Exception:
         if isinstance(ex, openai.error.InvalidRequestError):

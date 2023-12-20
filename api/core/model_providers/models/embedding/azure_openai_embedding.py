@@ -1,5 +1,6 @@
-import decimal
 import logging
+from abc import abstractmethod
+from typing import Any
 
 import openai
 import tiktoken
@@ -20,8 +21,15 @@ class AzureOpenAIEmbedding(BaseEmbedding):
             model_type=self.type
         )
 
-        client = OpenAIEmbeddings(
-            deployment=name,
+        self.name = name
+        client = self._init_client()
+        
+        super().__init__(model_provider, client, name)
+
+    @abstractmethod
+    def _init_client(self) -> Any:
+        return OpenAIEmbeddings(
+            deployment=self.name,
             openai_api_type='azure',
             openai_api_version=AZURE_OPENAI_API_VERSION,
             chunk_size=16,
@@ -30,8 +38,6 @@ class AzureOpenAIEmbedding(BaseEmbedding):
             openai_api_base=self.credentials.get('openai_api_base')
         )
 
-        super().__init__(model_provider, client, name)
-    
     @property
     def base_model_name(self) -> str:
         """

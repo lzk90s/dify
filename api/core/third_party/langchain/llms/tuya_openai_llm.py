@@ -17,6 +17,11 @@ class TuyaHttpClient(openai.ChatCompletion, ABC):
     ) -> str:
         return ''
 
+    @classmethod
+    def create(cls, *args, **kwargs):
+        response = super().create(*args, **kwargs)
+        return response['data'] if 'errorCode' in response else response
+
 
 class EnhanceTuyaChatAI(EnhanceAzureChatOpenAI):
     scene_id: str
