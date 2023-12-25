@@ -82,7 +82,8 @@ class ApiExternalDataTool(ExternalDataTool):
             'app_id': self.app_id,
             'tool_variable': self.variable,
             'inputs': inputs,
-            'query': query
+            'query': query,
+            'query_embedding': self.embeddings.embed_query(query) if self.embeddings else None,
         })
 
         if 'result' not in response_json:

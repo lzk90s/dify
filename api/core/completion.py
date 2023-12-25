@@ -8,27 +8,27 @@ from flask import current_app, Flask
 from requests.exceptions import ChunkedEncodingError
 
 from core.agent.agent_executor import AgentExecuteResult, PlanningStrategy
-from core.callback_handler.main_chain_gather_callback_handler import MainChainGatherCallbackHandler
 from core.callback_handler.llm_callback_handler import LLMCallbackHandler
+from core.callback_handler.main_chain_gather_callback_handler import MainChainGatherCallbackHandler
 from core.conversation_message_task import ConversationMessageTask, ConversationTaskStoppedException, \
     ConversationTaskInterruptException
 from core.embedding.cached_embedding import CacheEmbedding
 from core.external_data_tool.factory import ExternalDataToolFactory
 from core.file.file_obj import FileObj
 from core.index.vector_index.vector_index import VectorIndex
-from core.model_providers.error import LLMBadRequestError
 from core.memory.read_only_conversation_token_db_buffer_shared_memory import \
     ReadOnlyConversationTokenDBBufferSharedMemory
+from core.model_providers.error import LLMBadRequestError, ProviderTokenNotInitError
 from core.model_providers.model_factory import ModelFactory
 from core.model_providers.models.entity.message import PromptMessage, PromptMessageFile
 from core.model_providers.models.llm.base import BaseLLM
+from core.moderation.base import ModerationException, ModerationAction
+from core.moderation.factory import ModerationFactory
 from core.orchestrator_rule_parser import OrchestratorRuleParser
 from core.prompt.prompt_template import PromptTemplateParser
 from core.prompt.prompt_transform import PromptTransform
 from models.dataset import Dataset
 from models.model import App, AppModelConfig, Account, Conversation, EndUser
-from core.moderation.base import ModerationException, ModerationAction
-from core.moderation.factory import ModerationFactory
 from services.annotation_service import AppAnnotationService
 from services.dataset_service import DatasetCollectionBindingService
 
@@ -250,12 +250,23 @@ class Completion:
             tool_type = external_data_tool.get("type")
             tool_config = external_data_tool.get("config")
 
+            embeddings = None
+            try:
+                embedding_model = ModelFactory.get_embedding_model(
+                    tenant_id=tenant_id
+                )
+                embeddings = CacheEmbedding(embedding_model)
+            except LLMBadRequestError or ProviderTokenNotInitError as e:
+                logging.warning(f'getEmbeddingModelError: {e}')
+                pass
+
             external_data_tool_factory = ExternalDataToolFactory(
                 name=tool_type,
                 tenant_id=tenant_id,
                 app_id=app_id,
                 variable=tool_variable,
-                config=tool_config
+                config=tool_config,
+                embeddings=embeddings
             )
 
             # query external data tool
@@ -391,7 +402,8 @@ class Completion:
                     score = documents[0].metadata['score']
                     annotation = AppAnnotationService.get_annotation_by_id(annotation_id)
                     if annotation:
-                        conversation_message_task.annotation_end(annotation.content, annotation.id, annotation.account.name)
+                        conversation_message_task.annotation_end(annotation.content, annotation.id,
+                                                                 annotation.account.name)
                         # insert annotation history
                         AppAnnotationService.add_annotation_history(annotation.id,
                                                                     app.id,

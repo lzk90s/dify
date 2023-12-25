@@ -1,6 +1,8 @@
 from abc import abstractmethod, ABC
 from typing import Optional
 
+from langchain.embeddings.base import Embeddings
+
 from core.extension.extensible import Extensible, ExtensionModule
 
 
@@ -15,11 +17,14 @@ class ExternalDataTool(Extensible, ABC):
     """the id of app"""
     variable: str
     """the tool variable name of app tool"""
+    embeddings: Embeddings
 
-    def __init__(self, tenant_id: str, app_id: str, variable: str, config: Optional[dict] = None) -> None:
+    def __init__(self, tenant_id: str, app_id: str, variable: str, config: Optional[dict] = None,
+                 embeddings: Embeddings = None) -> None:
         super().__init__(tenant_id, config)
         self.app_id = app_id
         self.variable = variable
+        self.embeddings = embeddings
 
     @classmethod
     @abstractmethod
