@@ -3,10 +3,10 @@ import os
 
 import dotenv
 
-
 dotenv.load_dotenv()
 
 DEFAULTS = {
+    'DB_TYPE': 'postgres',
     'DB_USERNAME': 'postgres',
     'DB_PASSWORD': '',
     'DB_HOST': 'localhost',
@@ -58,6 +58,8 @@ DEFAULTS = {
     'BILLING_ENABLED': 'False',
     'CAN_REPLACE_LOGO': 'False',
     'ETL_TYPE': 'dify',
+    'APOLLO_APP_ID': 'dify',
+    'APOLLO_LOCATOR_URL': ''
 }
 
 
@@ -141,16 +143,22 @@ class Config:
         self.CHECK_UPDATE_URL = get_env('CHECK_UPDATE_URL')
 
         # ------------------------
+        # Apollo and Strange Configurations
+        # ------------------------
+        self.APOLLO_APP_ID = get_env('APOLLO_APP_ID')
+        self.APOLLO_LOCATOR_URL = get_env('APOLLO_LOCATOR_URL')
+
+        # ------------------------
         # Database Configurations.
         # ------------------------
         db_credentials = {
             key: get_env(key) for key in
-            ['DB_USERNAME', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_CHARSET']
+            ['DB_TYPE', 'DB_USERNAME', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT', 'DB_DATABASE', 'DB_CHARSET']
         }
 
         db_extras = f"?client_encoding={db_credentials['DB_CHARSET']}" if db_credentials['DB_CHARSET'] else ""
 
-        self.SQLALCHEMY_DATABASE_URI = f"postgresql://{db_credentials['DB_USERNAME']}:{db_credentials['DB_PASSWORD']}@{db_credentials['DB_HOST']}:{db_credentials['DB_PORT']}/{db_credentials['DB_DATABASE']}{db_extras}"
+        self.SQLALCHEMY_DATABASE_URI = f"{db_credentials['DB_TYPE']}://{db_credentials['DB_USERNAME']}:{db_credentials['DB_PASSWORD']}@{db_credentials['DB_HOST']}:{db_credentials['DB_PORT']}/{db_credentials['DB_DATABASE']}{db_extras}"
         self.SQLALCHEMY_ENGINE_OPTIONS = {
             'pool_size': int(get_env('SQLALCHEMY_POOL_SIZE')),
             'pool_recycle': int(get_env('SQLALCHEMY_POOL_RECYCLE'))
@@ -217,7 +225,7 @@ class Config:
         self.MAIL_TYPE = get_env('MAIL_TYPE')
         self.MAIL_DEFAULT_SEND_FROM = get_env('MAIL_DEFAULT_SEND_FROM')
         self.RESEND_API_KEY = get_env('RESEND_API_KEY')
-        
+
         # ------------------------
         # Workpace Configurations.
         # ------------------------

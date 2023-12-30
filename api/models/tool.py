@@ -1,8 +1,7 @@
 import json
 from enum import Enum
 
-from sqlalchemy.dialects.postgresql import UUID
-
+from core.sqltype import UUID, gen_uuid
 from extensions.ext_database import db
 
 
@@ -24,7 +23,7 @@ class ToolProvider(db.Model):
         db.UniqueConstraint('tenant_id', 'tool_name', name='unique_tool_provider_tool_name')
     )
 
-    id = db.Column(UUID, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
     tenant_id = db.Column(UUID, nullable=False)
     tool_name = db.Column(db.String(40), nullable=False)
     encrypted_credentials = db.Column(db.Text, nullable=True)

@@ -1,5 +1,4 @@
-from sqlalchemy.dialects.postgresql import UUID
-
+from core.sqltype import UUID, gen_uuid
 from extensions.ext_database import db
 from models.model import Message
 
@@ -11,7 +10,7 @@ class SavedMessage(db.Model):
         db.Index('saved_message_message_idx', 'app_id', 'message_id', 'created_by_role', 'created_by'),
     )
 
-    id = db.Column(UUID, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
     app_id = db.Column(UUID, nullable=False)
     message_id = db.Column(UUID, nullable=False)
     created_by_role = db.Column(db.String(255), nullable=False, server_default=db.text("'end_user'::character varying"))
@@ -30,7 +29,7 @@ class PinnedConversation(db.Model):
         db.Index('pinned_conversation_conversation_idx', 'app_id', 'conversation_id', 'created_by_role', 'created_by'),
     )
 
-    id = db.Column(UUID, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
     app_id = db.Column(UUID, nullable=False)
     conversation_id = db.Column(UUID, nullable=False)
     created_by_role = db.Column(db.String(255), nullable=False, server_default=db.text("'end_user'::character varying"))

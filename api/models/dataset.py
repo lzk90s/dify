@@ -2,9 +2,9 @@ import json
 import pickle
 from json import JSONDecodeError
 
-from sqlalchemy import func
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import func, JSON
 
+from core.sqltype import UUID, gen_uuid
 from extensions.ext_database import db
 from models.account import Account
 from models.model import App, UploadFile
@@ -20,7 +20,7 @@ class Dataset(db.Model):
 
     INDEXING_TECHNIQUE_LIST = ['high_quality', 'economy']
 
-    id = db.Column(UUID, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
     tenant_id = db.Column(UUID, nullable=False)
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
@@ -40,7 +40,7 @@ class Dataset(db.Model):
     embedding_model = db.Column(db.String(255), nullable=True)
     embedding_model_provider = db.Column(db.String(255), nullable=True)
     collection_binding_id = db.Column(UUID, nullable=True)
-    retrieval_model = db.Column(JSONB, nullable=True)
+    retrieval_model = db.Column(JSON, nullable=True)
 
     @property
     def dataset_keyword_table(self):
@@ -116,7 +116,7 @@ class DatasetProcessRule(db.Model):
         db.Index('dataset_process_rule_dataset_id_idx', 'dataset_id'),
     )
 
-    id = db.Column(UUID, nullable=False,
+    id = db.Column(UUID, nullable=False, default=gen_uuid,
                    server_default=db.text('uuid_generate_v4()'))
     dataset_id = db.Column(UUID, nullable=False)
     mode = db.Column(db.String(255), nullable=False,
@@ -166,7 +166,7 @@ class Document(db.Model):
     )
 
     # initial fields
-    id = db.Column(UUID, nullable=False,
+    id = db.Column(UUID, nullable=False, default=gen_uuid,
                    server_default=db.text('uuid_generate_v4()'))
     tenant_id = db.Column(UUID, nullable=False)
     dataset_id = db.Column(UUID, nullable=False)
@@ -324,7 +324,7 @@ class DocumentSegment(db.Model):
     )
 
     # initial fields
-    id = db.Column(UUID, nullable=False,
+    id = db.Column(UUID, nullable=False, default=gen_uuid,
                    server_default=db.text('uuid_generate_v4()'))
     tenant_id = db.Column(UUID, nullable=False)
     dataset_id = db.Column(UUID, nullable=False)
@@ -389,7 +389,8 @@ class AppDatasetJoin(db.Model):
         db.Index('app_dataset_join_app_dataset_idx', 'dataset_id', 'app_id'),
     )
 
-    id = db.Column(UUID, primary_key=True, nullable=False, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, primary_key=True, default=gen_uuid, nullable=False,
+                   server_default=db.text('uuid_generate_v4()'))
     app_id = db.Column(UUID, nullable=False)
     dataset_id = db.Column(UUID, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.current_timestamp())
@@ -406,7 +407,8 @@ class DatasetQuery(db.Model):
         db.Index('dataset_query_dataset_id_idx', 'dataset_id'),
     )
 
-    id = db.Column(UUID, primary_key=True, nullable=False, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, primary_key=True, default=gen_uuid, nullable=False,
+                   server_default=db.text('uuid_generate_v4()'))
     dataset_id = db.Column(UUID, nullable=False)
     content = db.Column(db.Text, nullable=False)
     source = db.Column(db.String(255), nullable=False)
@@ -423,7 +425,8 @@ class DatasetKeywordTable(db.Model):
         db.Index('dataset_keyword_table_dataset_id_idx', 'dataset_id'),
     )
 
-    id = db.Column(UUID, primary_key=True, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, primary_key=True, default=gen_uuid,
+                   server_default=db.text('uuid_generate_v4()'))
     dataset_id = db.Column(UUID, nullable=False, unique=True)
     keyword_table = db.Column(db.Text, nullable=False)
 
@@ -450,7 +453,8 @@ class Embedding(db.Model):
         db.UniqueConstraint('model_name', 'hash', name='embedding_hash_idx')
     )
 
-    id = db.Column(UUID, primary_key=True, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, primary_key=True, default=gen_uuid,
+                   server_default=db.text('uuid_generate_v4()'))
     model_name = db.Column(db.String(40), nullable=False,
                            server_default=db.text("'text-embedding-ada-002'::character varying"))
     hash = db.Column(db.String(64), nullable=False)
@@ -472,7 +476,8 @@ class DatasetCollectionBinding(db.Model):
 
     )
 
-    id = db.Column(UUID, primary_key=True, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, primary_key=True, default=gen_uuid,
+                   server_default=db.text('uuid_generate_v4()'))
     provider_name = db.Column(db.String(40), nullable=False)
     model_name = db.Column(db.String(40), nullable=False)
     type = db.Column(db.String(40), server_default=db.text("'dataset'::character varying"), nullable=False)
