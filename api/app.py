@@ -7,10 +7,13 @@ if not os.environ.get("DEBUG") or os.environ.get("DEBUG").lower() != 'true':
     from gevent import monkey
 
     monkey.patch_all()
-    if os.environ.get("VECTOR_STORE") == 'milvus':
+    #if os.environ.get("VECTOR_STORE") == 'milvus':
         import grpc.experimental.gevent
 
         grpc.experimental.gevent.init_gevent()
+
+    import langchain
+    langchain.verbose = True
 
 import time
 import logging
@@ -20,9 +23,8 @@ import threading
 from flask import Flask, request, Response
 from flask_cors import CORS
 
-from core.model_providers.providers import hosted
 from extensions import ext_celery, ext_sentry, ext_redis, ext_login, ext_migrate, \
-    ext_database, ext_storage, ext_mail, ext_code_based_extension
+    ext_database, ext_storage, ext_mail, ext_code_based_extension, ext_hosting_provider
 from extensions.ext_database import db
 from extensions.ext_login import login_manager
 
@@ -85,8 +87,6 @@ def create_app(test_config=None) -> Flask:
     register_blueprints(app)
     register_commands(app)
 
-    hosted.init_app(app)
-
     return app
 
 
@@ -106,6 +106,7 @@ def initialize_extensions(app):
     ext_celery.init_app(app)
     ext_login.init_app(app)
     ext_mail.init_app(app)
+    ext_hosting_provider.init_app(app)
     ext_sentry.init_app(app)
 
 
@@ -116,13 +117,17 @@ def load_user_from_request(request_from_flask_login):
     if request.blueprint == 'console':
         # Check if the user_id contains a dot, indicating the old format
         auth_header = request.headers.get('Authorization', '')
-        if ' ' not in auth_header:
-            raise Unauthorized('Invalid Authorization header format. Expected \'Bearer <api-key>\' format.')
-        auth_scheme, auth_token = auth_header.split(None, 1)
-        auth_scheme = auth_scheme.lower()
-        if auth_scheme != 'bearer':
-            raise Unauthorized('Invalid Authorization header format. Expected \'Bearer <api-key>\' format.')
-
+        if not auth_header:
+            auth_token = request.args.get('_token')
+            if not auth_token:
+                raise Unauthorized('Invalid Authorization token.')
+        else:
+            if ' ' not in auth_header:
+                raise Unauthorized('Invalid Authorization header format. Expected \'Bearer <api-key>\' format.')
+            auth_scheme, auth_token = auth_header.split(None, 1)
+            auth_scheme = auth_scheme.lower()
+            if auth_scheme != 'bearer':
+                raise Unauthorized('Invalid Authorization header format. Expected \'Bearer <api-key>\' format.')
         decoded = PassportService().verify(auth_token)
         user_id = decoded.get('user_id')
 
