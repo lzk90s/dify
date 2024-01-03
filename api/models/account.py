@@ -1,11 +1,11 @@
-import json
 import enum
-from math import e
+import json
 from typing import List
 
 from flask_login import UserMixin
+
+from core.sqltype import UUID, gen_uuid
 from extensions.ext_database import db
-from sqlalchemy.dialects.postgresql import UUID
 
 
 class AccountStatus(str, enum.Enum):
@@ -23,7 +23,7 @@ class Account(UserMixin, db.Model):
         db.Index('account_email_idx', 'email')
     )
 
-    id = db.Column(UUID, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
     name = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), nullable=False)
     password = db.Column(db.String(255), nullable=True)
@@ -109,7 +109,7 @@ class Tenant(db.Model):
         db.PrimaryKeyConstraint('id', name='tenant_pkey'),
     )
 
-    id = db.Column(UUID, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
     name = db.Column(db.String(255), nullable=False)
     encrypt_public_key = db.Column(db.Text)
     plan = db.Column(db.String(255), nullable=False, server_default=db.text("'basic'::character varying"))
@@ -124,11 +124,11 @@ class Tenant(db.Model):
             Account.id == TenantAccountJoin.account_id,
             TenantAccountJoin.tenant_id == self.id
         ).all()
-    
+
     @property
     def custom_config_dict(self) -> dict:
         return json.loads(self.custom_config) if self.custom_config else {}
-    
+
     @custom_config_dict.setter
     def custom_config_dict(self, value: dict):
         self.custom_config = json.dumps(value)
@@ -149,11 +149,11 @@ class TenantAccountJoin(db.Model):
         db.UniqueConstraint('tenant_id', 'account_id', name='unique_tenant_account_join')
     )
 
-    id = db.Column(UUID, server_default=db.text('uuid_generate_v4()'))
-    tenant_id = db.Column(UUID, nullable=False)
-    account_id = db.Column(UUID, nullable=False)
+    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
+    tenant_id = db.Column(UUID, default=gen_uuid, nullable=False)
+    account_id = db.Column(UUID, default=gen_uuid, nullable=False)
     role = db.Column(db.String(16), nullable=False, server_default='normal')
-    invited_by = db.Column(UUID, nullable=True)
+    invited_by = db.Column(UUID, default=gen_uuid, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
     updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
 
@@ -166,8 +166,8 @@ class AccountIntegrate(db.Model):
         db.UniqueConstraint('provider', 'open_id', name='unique_provider_open_id')
     )
 
-    id = db.Column(UUID, server_default=db.text('uuid_generate_v4()'))
-    account_id = db.Column(UUID, nullable=False)
+    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
+    account_id = db.Column(UUID, default=gen_uuid, nullable=False)
     provider = db.Column(db.String(16), nullable=False)
     open_id = db.Column(db.String(255), nullable=False)
     encrypted_token = db.Column(db.String(255), nullable=False)

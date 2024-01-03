@@ -17,6 +17,7 @@ class TuyaOpenAIEmbedding(AzureOpenAIEmbedding):
             openai_api_version=AZURE_OPENAI_API_VERSION,
             chunk_size=16,
             max_retries=1,
+            model_name=self.credentials.get('base_model_name'),
             openai_api_key=self.credentials.get('openai_api_key'),
             openai_api_base=self.credentials.get('openai_api_base'),
             scene_id=self.credentials.get('scene_id'),

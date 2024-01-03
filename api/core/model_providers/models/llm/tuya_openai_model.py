@@ -23,13 +23,7 @@ class TuyaOpenAIModel(AzureOpenAIModel):
                 'presence_penalty': provider_model_kwargs.get('presence_penalty'),
             }
 
-            # azure openai deployment_name is not same as gpt model_name
-            model_name = self.name
-            if model_name.startswith('gpt-35'):
-                model_name = model_name.replace('gpt-35', 'gpt-3.5')
-
             client = EnhanceTuyaChatAI(
-                model_name=model_name,
                 deployment_name=self.name,
                 temperature=provider_model_kwargs.get('temperature'),
                 max_tokens=provider_model_kwargs.get('max_tokens'),
@@ -38,6 +32,7 @@ class TuyaOpenAIModel(AzureOpenAIModel):
                 request_timeout=60,
                 openai_api_type='azure',
                 openai_api_version=AZURE_OPENAI_API_VERSION,
+                model_name=self.credentials.get('base_model_name').replace('gpt-35', 'gpt-3.5'),
                 openai_api_key=self.credentials.get('openai_api_key'),
                 openai_api_base=self.credentials.get('openai_api_base'),
                 scene_id=self.credentials.get('scene_id'),

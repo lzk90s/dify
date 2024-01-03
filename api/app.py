@@ -5,9 +5,11 @@ from werkzeug.exceptions import Unauthorized
 
 if not os.environ.get("DEBUG") or os.environ.get("DEBUG").lower() != 'true':
     from gevent import monkey
+
     monkey.patch_all()
     if os.environ.get("VECTOR_STORE") == 'milvus':
         import grpc.experimental.gevent
+
         grpc.experimental.gevent.init_gevent()
 
 import time
@@ -25,21 +27,21 @@ from extensions.ext_database import db
 from extensions.ext_login import login_manager
 
 # DO NOT REMOVE BELOW
-from models import model, account, dataset, web, task, source, tool
-from events import event_handlers
 # DO NOT REMOVE ABOVE
 
 from config import Config, CloudEditionConfig
 from commands import register_commands
 from services.account_service import AccountService
 from libs.passport import PassportService
+from ds import ds_apollo, ds_strange
 
 import warnings
+
 warnings.simplefilter("ignore", ResourceWarning)
 
 # fix windows platform
 if os.name == "nt":
-    os.system('tzutil /s "UTC"')    
+    os.system('tzutil /s "UTC"')
 else:
     os.environ['TZ'] = 'UTC'
     time.tzset()
@@ -48,12 +50,14 @@ else:
 class DifyApp(Flask):
     pass
 
+
 # -------------
 # Configuration
 # -------------
 
 
 config_type = os.getenv('EDITION', default='SELF_HOSTED')  # ce edition first
+
 
 # ----------------------------
 # Application Factory Function
@@ -62,6 +66,8 @@ config_type = os.getenv('EDITION', default='SELF_HOSTED')  # ce edition first
 
 def create_app(test_config=None) -> Flask:
     app = DifyApp(__name__)
+
+    initialize_ds()
 
     if test_config:
         app.config.from_object(test_config)
@@ -82,6 +88,11 @@ def create_app(test_config=None) -> Flask:
     hosted.init_app(app)
 
     return app
+
+
+def initialize_ds():
+    ds_apollo.init()
+    ds_strange.init()
 
 
 def initialize_extensions(app):
@@ -111,13 +122,14 @@ def load_user_from_request(request_from_flask_login):
         auth_scheme = auth_scheme.lower()
         if auth_scheme != 'bearer':
             raise Unauthorized('Invalid Authorization header format. Expected \'Bearer <api-key>\' format.')
-        
+
         decoded = PassportService().verify(auth_token)
         user_id = decoded.get('user_id')
 
         return AccountService.load_user(user_id)
     else:
         return None
+
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
@@ -173,7 +185,6 @@ def register_blueprints(app):
 # create app
 app = create_app()
 celery = app.extensions["celery"]
-
 
 if app.config['TESTING']:
     print("App is running in TESTING mode")

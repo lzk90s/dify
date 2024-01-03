@@ -65,6 +65,9 @@ class TuyaOpenAIProvider(AzureOpenAIProvider):
         if 'base_model_name' not in credentials:
             raise CredentialsValidateFailedError('Base Model Name is required')
 
+        if 'scene_id' not in credentials:
+            raise CredentialsValidateFailedError('Scene id is required')
+
         if credentials['base_model_name'] not in BASE_MODELS:
             raise CredentialsValidateFailedError('Base Model Name is invalid')
 
@@ -77,6 +80,7 @@ class TuyaOpenAIProvider(AzureOpenAIProvider):
                     request_timeout=10,
                     openai_api_type='azure',
                     openai_api_version='2023-07-01-preview',
+                    model_name=credentials['base_model_name'].replace('gpt-35', 'gpt-3.5'),
                     openai_api_key=credentials['openai_api_key'],
                     openai_api_base=credentials['openai_api_base'],
                     scene_id=credentials.get('scene_id'),
@@ -97,6 +101,7 @@ class TuyaOpenAIProvider(AzureOpenAIProvider):
                     deployment=model_name,
                     chunk_size=16,
                     max_retries=1,
+                    model_name=credentials['base_model_name'],
                     openai_api_key=credentials['openai_api_key'],
                     openai_api_base=credentials['openai_api_base'],
                     scene_id=credentials.get('scene_id'),

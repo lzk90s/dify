@@ -1,27 +1,25 @@
 # -*- coding:utf-8 -*-
 import base64
-import json
 import logging
 import secrets
-import uuid
 from datetime import datetime, timedelta
 from hashlib import sha256
 from typing import Optional, Dict, Any
 
-from werkzeug.exceptions import Forbidden, Unauthorized
 from flask import session, current_app
 from sqlalchemy import func
+from werkzeug.exceptions import Forbidden
 
 from events.tenant_event import tenant_was_created
 from extensions.ext_redis import redis_client
+from libs.helper import get_remote_ip
+from libs.passport import PassportService
+from libs.password import compare_password, hash_password
+from libs.rsa import generate_key_pair
+from models.account import *
 from services.errors.account import AccountLoginError, CurrentPasswordIncorrectError, LinkAccountIntegrateError, \
     TenantNotFound, AccountNotLinkTenantError, InvalidActionError, CannotOperateSelfError, MemberNotInTenantError, \
     RoleAlreadyAssignedError, NoPermissionError, AccountRegisterError, AccountAlreadyInTenantError
-from libs.helper import get_remote_ip
-from libs.password import compare_password, hash_password
-from libs.rsa import generate_key_pair
-from libs.passport import PassportService
-from models.account import *
 from tasks.mail_invite_member_task import send_invite_member_mail_task
 
 
@@ -85,13 +83,13 @@ class AccountService:
                 db.session.commit()
 
         return account
-    
+
     @staticmethod
     def get_account_jwt_token(account):
         payload = {
-            "user_id": account.id,
+            "user_id": str(account.id),
             "exp": datetime.utcnow() + timedelta(days=30),
-            "iss":  current_app.config['EDITION'],
+            "iss": current_app.config['EDITION'],
             "sub": 'Console API Passport',
         }
 
@@ -346,7 +344,7 @@ class TenantService:
         }
         if action not in ['add', 'remove', 'update']:
             raise InvalidActionError("Invalid action.")
-        
+
         if member:
             if operator.id == member.id:
                 raise CannotOperateSelfError("Cannot operate self.")
@@ -542,10 +540,10 @@ class RegisterService:
             return None
 
         return {
-                'account': account,
-                'data': invitation_data,
-                'tenant': tenant,
-                }
+            'account': account,
+            'data': invitation_data,
+            'tenant': tenant,
+        }
 
     @classmethod
     def _get_invitation_by_token(cls, token: str, workspace_id: str, email: str) -> Optional[Dict[str, str]]:

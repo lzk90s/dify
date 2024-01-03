@@ -1,23 +1,22 @@
+import datetime
 import json
 import logging
-import datetime
-import time
 import random
+import time
 import uuid
 from typing import Optional, List
 
 from flask import current_app
+from flask_login import current_user
 from sqlalchemy import func
 
 from core.index.index import IndexBuilder
 from core.model_providers.error import LLMBadRequestError, ProviderTokenNotInitError
 from core.model_providers.model_factory import ModelFactory
-from extensions.ext_redis import redis_client
-from flask_login import current_user
-
 from events.dataset_event import dataset_was_deleted
 from events.document_event import document_was_deleted
 from extensions.ext_database import db
+from extensions.ext_redis import redis_client
 from libs import helper
 from models.account import Account
 from models.dataset import Dataset, Document, DatasetQuery, DatasetProcessRule, AppDatasetJoin, DocumentSegment, \
@@ -31,10 +30,10 @@ from services.errors.file import FileNotExistsError
 from services.vector_service import VectorService
 from tasks.clean_notion_document_task import clean_notion_document_task
 from tasks.deal_dataset_vector_index_task import deal_dataset_vector_index_task
+from tasks.delete_segment_from_index_task import delete_segment_from_index_task
 from tasks.document_indexing_task import document_indexing_task
 from tasks.document_indexing_update_task import document_indexing_update_task
 from tasks.recover_document_indexing_task import recover_document_indexing_task
-from tasks.delete_segment_from_index_task import delete_segment_from_index_task
 
 
 class DatasetService:
