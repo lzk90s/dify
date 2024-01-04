@@ -17,3 +17,4 @@ xinference: 15
 openllm: 16
 localai: 17
 openai_api_compatible: 18
+tuya_openai: 19

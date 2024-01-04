@@ -85,7 +85,7 @@ class AzureOpenAILargeLanguageModel(_CommonAzureOpenAI, LargeLanguageModel):
             raise CredentialsValidateFailedError(f'Base Model Name {credentials["base_model_name"]} is invalid')
 
         try:
-            client = AzureOpenAI(**self._to_credential_kwargs(credentials))
+            client = self.build_client(**self._to_credential_kwargs(credentials))
 
             if ai_model_entity.entity.model_properties.get(ModelPropertyKey.MODE) == LLMMode.CHAT.value:
                 # chat model

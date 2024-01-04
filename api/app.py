@@ -7,12 +7,13 @@ if not os.environ.get("DEBUG") or os.environ.get("DEBUG").lower() != 'true':
     from gevent import monkey
 
     monkey.patch_all()
-    #if os.environ.get("VECTOR_STORE") == 'milvus':
-        import grpc.experimental.gevent
+    # if os.environ.get("VECTOR_STORE") == 'milvus':
+    import grpc.experimental.gevent
 
-        grpc.experimental.gevent.init_gevent()
+    grpc.experimental.gevent.init_gevent()
 
     import langchain
+
     langchain.verbose = True
 
 import time
@@ -69,7 +70,7 @@ config_type = os.getenv('EDITION', default='SELF_HOSTED')  # ce edition first
 def create_app(test_config=None) -> Flask:
     app = DifyApp(__name__)
 
-    initialize_ds()
+    # initialize_ds()
 
     if test_config:
         app.config.from_object(test_config)

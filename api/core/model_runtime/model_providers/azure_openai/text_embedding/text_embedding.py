@@ -16,12 +16,15 @@ from core.model_runtime.model_providers.azure_openai._constant import EMBEDDING_
 
 class AzureOpenAITextEmbeddingModel(_CommonAzureOpenAI, TextEmbeddingModel):
 
+    def build_client(self, *args, **kwargs):
+        return AzureOpenAI(*args, **kwargs)
+
     def _invoke(self, model: str, credentials: dict,
                 texts: list[str], user: Optional[str] = None) \
             -> TextEmbeddingResult:
         base_model_name = credentials['base_model_name']
         credentials_kwargs = self._to_credential_kwargs(credentials)
-        client = AzureOpenAI(**credentials_kwargs)
+        client = self.build_client(**credentials_kwargs)
 
         extra_model_kwargs = {}
         if user:
@@ -131,7 +134,7 @@ class AzureOpenAITextEmbeddingModel(_CommonAzureOpenAI, TextEmbeddingModel):
 
         try:
             credentials_kwargs = self._to_credential_kwargs(credentials)
-            client = AzureOpenAI(**credentials_kwargs)
+            client = self.build_client(**credentials_kwargs)
 
             self._embedding_invoke(
                 model=model,
