@@ -1,4 +1,4 @@
-coverage~=7.2.4
+coverage~=6.0.2
 beautifulsoup4==4.12.2
 flask~=2.3.2
 Flask-SQLAlchemy~=3.0.3
@@ -64,3 +64,4 @@ markdown~=3.5.1
 google-generativeai~=0.3.2
 apollo-client~=2.1.2
 mysql-connector-python~=8.2.0
+mysqlclient~=2.2.1
