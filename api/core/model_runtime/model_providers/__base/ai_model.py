@@ -1,19 +1,16 @@
 import decimal
-import json
-import logging
 import os
 from abc import ABC, abstractmethod
 from typing import Optional
 
 import yaml
-from pydantic import ValidationError
 
+from core.model_runtime.entities.common_entities import I18nObject
 from core.model_runtime.entities.defaults import PARAMETER_RULE_TEMPLATE
 from core.model_runtime.entities.model_entities import PriceInfo, AIModelEntity, PriceType, PriceConfig, \
     DefaultParameterName, FetchFrom, ModelType
-from core.model_runtime.entities.common_entities import I18nObject
 from core.model_runtime.errors.invoke import InvokeError, InvokeAuthorizationError
-from core.model_runtime.model_providers.__base.tokenizers.gpt2_tokenzier import GPT2Tokenizer
+from core.model_runtime.model_providers.__base.tokenizers.tiktoken_tokenzier import TikTokenTokenizer
 
 
 class AIModel(ABC):
@@ -58,7 +55,8 @@ class AIModel(ABC):
         for invoke_error, model_errors in self._invoke_error_mapping.items():
             if isinstance(error, tuple(model_errors)):
                 if invoke_error == InvokeAuthorizationError:
-                    return invoke_error(description="Incorrect model credentials provided, please check and try again. ")
+                    return invoke_error(
+                        description="Incorrect model credentials provided, please check and try again. ")
 
                 return invoke_error(description=f"{invoke_error.description}: {str(error)}")
 
@@ -129,7 +127,8 @@ class AIModel(ABC):
         # get the path of current classes
         current_path = os.path.abspath(__file__)
         # get parent path of the current path
-        provider_model_type_path = os.path.join(os.path.dirname(os.path.dirname(current_path)), provider_name, model_type)
+        provider_model_type_path = os.path.join(os.path.dirname(os.path.dirname(current_path)), provider_name,
+                                                model_type)
 
         # get all yaml files path under provider_model_type_path that do not start with __
         model_schema_yaml_paths = [
@@ -237,7 +236,7 @@ class AIModel(ABC):
         :return: model schema
         """
         return self._get_customizable_model_schema(model, credentials)
-    
+
     def _get_customizable_model_schema(self, model: str, credentials: dict) -> Optional[AIModelEntity]:
         """
         Get customizable model schema and fill in the template
@@ -246,7 +245,7 @@ class AIModel(ABC):
 
         if not schema:
             return None
-        
+
         # fill in the template
         new_parameter_rules = []
         for parameter_rule in schema.parameter_rules:
@@ -271,7 +270,9 @@ class AIModel(ABC):
                     if not parameter_rule.help.en_US:
                         parameter_rule.help.en_US = default_parameter_rule['help']['en_US']
                     if not parameter_rule.help.zh_Hans:
-                        parameter_rule.help.zh_Hans = default_parameter_rule['help'].get('zh_Hans', default_parameter_rule['help']['en_US'])
+                        parameter_rule.help.zh_Hans = default_parameter_rule['help'].get('zh_Hans',
+                                                                                         default_parameter_rule['help'][
+                                                                                             'en_US'])
                 except ValueError:
                     pass
 
@@ -315,4 +316,5 @@ class AIModel(ABC):
         :param text: plain text of prompt. You need to convert the original message to plain text
         :return: number of tokens
         """
-        return GPT2Tokenizer.get_num_tokens(text)
+        # return GPT2Tokenizer.get_num_tokens(text)
+        return TikTokenTokenizer.get_num_tokens(text)

@@ -362,48 +362,46 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                 choice = chunk_json['choices'][0]
                 chunk_index = choice['index'] if 'index' in choice else chunk_index
 
-                if 'delta' in choice:
-                    delta = choice['delta']
-                    if delta.get('content') is None or delta.get('content') == '':
-                        continue
-
-                    assistant_message_tool_calls = delta.get('tool_calls', None)
-                    # assistant_message_function_call = delta.delta.function_call
-
-                    # extract tool calls from response
-                    if assistant_message_tool_calls:
-                        tool_calls = self._extract_response_tool_calls(assistant_message_tool_calls)
-                    # function_call = self._extract_response_function_call(assistant_message_function_call)
-                    # tool_calls = [function_call] if function_call else []
-
-                    # transform assistant message to prompt message
-                    assistant_prompt_message = AssistantPromptMessage(
-                        content=delta.get('content', ''),
-                        tool_calls=tool_calls if assistant_message_tool_calls else []
-                    )
-
-                    full_assistant_content += delta.get('content', '')
-                elif 'text' in choice:
-                    if choice.get('text') is None or choice.get('text') == '':
-                        continue
-
-                    # transform assistant message to prompt message
-                    assistant_prompt_message = AssistantPromptMessage(
-                        content=choice.get('text', '')
-                    )
-
-                    full_assistant_content += choice.get('text', '')
-                else:
-                    continue
-
                 # check payload indicator for completion
                 if chunk_json['choices'][0].get('finish_reason') is not None:
                     yield create_final_llm_result_chunk(
-                        index=chunk_index,
+                        index=chunk_index + 1,
                         message=assistant_prompt_message,
                         finish_reason=chunk_json['choices'][0]['finish_reason']
                     )
                 else:
+                    if 'delta' in choice:
+                        delta = choice['delta']
+                        if delta.get('content') is None or delta.get('content') == '':
+                            continue
+
+                        assistant_message_tool_calls = delta.get('tool_calls', None)
+                        # assistant_message_function_call = delta.delta.function_call
+
+                        # extract tool calls from response
+                        if assistant_message_tool_calls:
+                            tool_calls = self._extract_response_tool_calls(assistant_message_tool_calls)
+                        # function_call = self._extract_response_function_call(assistant_message_function_call)
+                        # tool_calls = [function_call] if function_call else []
+
+                        # transform assistant message to prompt message
+                        assistant_prompt_message = AssistantPromptMessage(
+                            content=delta.get('content', ''),
+                            tool_calls=tool_calls if assistant_message_tool_calls else []
+                        )
+
+                        full_assistant_content += delta.get('content', '')
+                    elif 'text' in choice:
+                        if choice.get('text') is None or choice.get('text') == '':
+                            continue
+
+                        # transform assistant message to prompt message
+                        assistant_prompt_message = AssistantPromptMessage(
+                            content=choice.get('text', '')
+                        )
+
+                        full_assistant_content += choice.get('text', '')
+
                     yield LLMResultChunk(
                         model=model,
                         prompt_messages=prompt_messages,
@@ -412,12 +410,6 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                             message=assistant_prompt_message,
                         )
                     )
-            else:
-                yield create_final_llm_result_chunk(
-                    index=chunk_index + 1,
-                    message=AssistantPromptMessage(content=""),
-                    finish_reason="End of stream."
-                )
 
             chunk_index += 1
 
