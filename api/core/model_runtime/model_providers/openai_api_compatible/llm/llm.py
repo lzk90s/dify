@@ -1,27 +1,25 @@
+import json
 import logging
 from decimal import Decimal
+from typing import Optional, Generator, Union, List, cast
 from urllib.parse import urljoin
 
 import requests
-import json
-
-from typing import Optional, Generator, Union, List, cast
 
 from core.model_runtime.entities.common_entities import I18nObject
-from core.model_runtime.utils import helper
-
+from core.model_runtime.entities.llm_entities import LLMMode, LLMResult, LLMResultChunk, LLMResultChunkDelta
 from core.model_runtime.entities.message_entities import ImagePromptMessageContent, PromptMessage, \
     AssistantPromptMessage, PromptMessageContent, \
     PromptMessageContentType, PromptMessageFunction, PromptMessageTool, UserPromptMessage, SystemPromptMessage, \
     ToolPromptMessage
-from core.model_runtime.entities.model_entities import ModelPropertyKey, ModelType, PriceConfig, ParameterRule, \
+from core.model_runtime.entities.model_entities import ModelType, PriceConfig, ParameterRule, \
     DefaultParameterName, \
     ParameterType, ModelPropertyKey, FetchFrom, AIModelEntity
-from core.model_runtime.entities.llm_entities import LLMMode, LLMResult, LLMResultChunk, LLMResultChunkDelta
 from core.model_runtime.errors.invoke import InvokeError
 from core.model_runtime.errors.validate import CredentialsValidateFailedError
 from core.model_runtime.model_providers.__base.large_language_model import LargeLanguageModel
 from core.model_runtime.model_providers.openai_api_compatible._common import _CommonOAI_API_Compat
+from core.model_runtime.utils import helper
 
 logger = logging.getLogger(__name__)
 
@@ -89,8 +87,8 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
             }
 
             api_key = credentials.get('api_key')
-            if api_key:
-                headers["Authorization"] = f"Bearer {api_key}"
+            # if api_key:
+            #     headers["Authorization"] = f"Bearer {api_key}"
 
             endpoint_url = credentials['endpoint_url']
             if not endpoint_url.endswith('/'):
@@ -99,7 +97,9 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
             # prepare the payload for a simple ping to the model
             data = {
                 'model': model,
-                'max_tokens': 5
+                'max_tokens': 5,
+                'sceneId': api_key,
+                'stream': False
             }
 
             completion_type = LLMMode.value_of(credentials['mode'])
@@ -111,7 +111,7 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                         "content": "ping"
                     },
                 ]
-                endpoint_url = urljoin(endpoint_url, 'chat/completions')
+                endpoint_url = urljoin(endpoint_url, 'chat')
             elif completion_type is LLMMode.COMPLETION:
                 data['prompt'] = 'ping'
                 endpoint_url = urljoin(endpoint_url, 'completions')
@@ -132,6 +132,9 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
 
             try:
                 json_result = response.json()
+                if json_result['errorCode']:
+                    raise CredentialsValidateFailedError(f'Credentials validation failed: http error')
+                json_result = json_result['data']
             except json.JSONDecodeError as e:
                 raise CredentialsValidateFailedError(f'Credentials validation failed: JSON decode error')
 
@@ -253,13 +256,14 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
         data = {
             "model": model,
             "stream": stream,
+            "sceneId": api_key,
             **model_parameters
         }
 
         completion_type = LLMMode.value_of(credentials['mode'])
 
         if completion_type is LLMMode.CHAT:
-            endpoint_url = urljoin(endpoint_url, 'chat/completions')
+            endpoint_url = urljoin(endpoint_url, 'chat')
             data['messages'] = [self._convert_prompt_message_to_dict(m) for m in prompt_messages]
         elif completion_type == LLMMode.COMPLETION:
             endpoint_url = urljoin(endpoint_url, 'completions')

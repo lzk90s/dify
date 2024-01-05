@@ -1,11 +1,11 @@
+import json
 import time
 from decimal import Decimal
 from typing import Optional
 from urllib.parse import urljoin
-import requests
-import json
 
 import numpy as np
+import requests
 
 from core.model_runtime.entities.common_entities import I18nObject
 from core.model_runtime.entities.model_entities import PriceType, ModelPropertyKey, ModelType, AIModelEntity, FetchFrom, \
@@ -33,7 +33,7 @@ class OAICompatEmbeddingModel(_CommonOAI_API_Compat, TextEmbeddingModel):
         :param user: unique user id
         :return: embeddings result
         """
-       
+
         # Prepare headers and payload for the request
         headers = {
             'Content-Type': 'application/json'
@@ -156,7 +156,8 @@ class OAICompatEmbeddingModel(_CommonOAI_API_Compat, TextEmbeddingModel):
 
             payload = {
                 'input': 'ping',
-                'model': model
+                'model': model,
+                'sceneId': api_key,
             }
 
             response = requests.post(
@@ -172,6 +173,9 @@ class OAICompatEmbeddingModel(_CommonOAI_API_Compat, TextEmbeddingModel):
 
             try:
                 json_result = response.json()
+                if json_result['errorCode']:
+                    raise CredentialsValidateFailedError(f'Credentials validation failed: http error')
+                json_result = json_result['data']
             except json.JSONDecodeError as e:
                 raise CredentialsValidateFailedError(f'Credentials validation failed: JSON decode error')
 
@@ -205,7 +209,6 @@ class OAICompatEmbeddingModel(_CommonOAI_API_Compat, TextEmbeddingModel):
         )
 
         return entity
-
 
     def _calc_response_usage(self, model: str, credentials: dict, tokens: int) -> EmbeddingUsage:
         """
