@@ -161,7 +161,7 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
             model_type=ModelType.LLM,
             fetch_from=FetchFrom.CUSTOMIZABLE_MODEL,
             model_properties={
-                ModelPropertyKey.CONTEXT_SIZE: int(credentials.get('context_size')),
+                ModelPropertyKey.CONTEXT_SIZE: int(credentials.get('context_size', "4096")),
                 ModelPropertyKey.MODE: credentials.get('mode'),
             },
             parameter_rules=[
@@ -199,9 +199,9 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                 ),
                 ParameterRule(
                     name=DefaultParameterName.PRESENCE_PENALTY.value,
-                    label=I18nObject(en_US="PRESENCE Penalty"),
+                    label=I18nObject(en_US="Presence Penalty"),
                     type=ParameterType.FLOAT,
-                    default=float(credentials.get('PRESENCE_penalty', 0)),
+                    default=float(credentials.get('presence_penalty', 0)),
                     min=-2,
                     max=2
                 ),
@@ -221,6 +221,13 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                 currency=credentials.get('currency', "USD")
             )
         )
+
+        if credentials['mode'] == 'chat':
+            entity.model_properties[ModelPropertyKey.MODE] = LLMMode.CHAT.value
+        elif credentials['mode'] == 'completion':
+            entity.model_properties[ModelPropertyKey.MODE] = LLMMode.COMPLETION.value
+        else:
+            raise ValueError(f"Unknown completion type {credentials['completion_type']}")
 
         return entity
 
@@ -265,7 +272,7 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
         if completion_type is LLMMode.CHAT:
             endpoint_url = urljoin(endpoint_url, 'chat')
             data['messages'] = [self._convert_prompt_message_to_dict(m) for m in prompt_messages]
-        elif completion_type == LLMMode.COMPLETION:
+        elif completion_type is LLMMode.COMPLETION:
             endpoint_url = urljoin(endpoint_url, 'completions')
             data['prompt'] = prompt_messages[0].content
         else:
@@ -294,10 +301,6 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
             timeout=(10, 60),
             stream=stream
         )
-
-        # Debug: Print request headers and json data
-        logger.debug(f"Request headers: {headers}")
-        logger.debug(f"Request JSON data: {data}")
 
         if response.status_code != 200:
             raise InvokeError(f"API request failed with status code {response.status_code}: {response.text}")
@@ -341,9 +344,9 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                 )
             )
 
-        for chunk in response.iter_lines(chunk_size=2048):
+        for chunk in response.iter_lines(decode_unicode=True, delimiter='\n\n'):
             if chunk:
-                decoded_chunk = chunk.decode('utf-8').strip().lstrip('data: ').lstrip()
+                decoded_chunk = chunk.strip().lstrip('data: ').lstrip()
 
                 chunk_json = None
                 try:
@@ -360,7 +363,7 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                     continue
 
                 choice = chunk_json['choices'][0]
-                chunk_index = choice['index'] if 'index' in choice else chunk_index
+                chunk_index += 1
 
                 # check payload indicator for completion
                 if chunk_json['choices'][0].get('finish_reason') is not None:
