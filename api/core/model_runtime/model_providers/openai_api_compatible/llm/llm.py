@@ -87,8 +87,8 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
             }
 
             api_key = credentials.get('api_key')
-            # if api_key:
-            #     headers["Authorization"] = f"Bearer {api_key}"
+            if api_key:
+                headers["Authorization"] = f"Bearer {api_key}"
 
             endpoint_url = credentials['endpoint_url']
             if not endpoint_url.endswith('/'):
@@ -341,7 +341,7 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                 )
             )
 
-        for chunk in response.iter_content(chunk_size=2048):
+        for chunk in response.iter_lines(chunk_size=2048):
             if chunk:
                 decoded_chunk = chunk.decode('utf-8').strip().lstrip('data: ').lstrip()
 

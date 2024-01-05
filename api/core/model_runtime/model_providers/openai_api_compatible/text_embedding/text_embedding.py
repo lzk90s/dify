@@ -11,6 +11,7 @@ from core.model_runtime.entities.common_entities import I18nObject
 from core.model_runtime.entities.model_entities import PriceType, ModelPropertyKey, ModelType, AIModelEntity, FetchFrom, \
     PriceConfig
 from core.model_runtime.entities.text_embedding_entities import TextEmbeddingResult, EmbeddingUsage
+from core.model_runtime.errors.invoke import InvokeServerUnavailableError
 from core.model_runtime.errors.validate import CredentialsValidateFailedError
 from core.model_runtime.model_providers.__base.text_embedding_model import TextEmbeddingModel
 from core.model_runtime.model_providers.openai_api_compatible._common import _CommonOAI_API_Compat
@@ -81,10 +82,12 @@ class OAICompatEmbeddingModel(_CommonOAI_API_Compat, TextEmbeddingModel):
         _iter = range(0, len(inputs), max_chunks)
 
         for i in _iter:
+            vs = inputs[i: i + max_chunks]
             # Prepare the payload for the request
             payload = {
-                'input': inputs[i: i + max_chunks],
+                'input': vs[0] if len(vs) == 1 else vs,
                 'model': model,
+                'sceneId': api_key,
                 **extra_model_kwargs
             }
 
@@ -98,12 +101,15 @@ class OAICompatEmbeddingModel(_CommonOAI_API_Compat, TextEmbeddingModel):
 
             response.raise_for_status()  # Raise an exception for HTTP errors
             response_data = response.json()
+            if response_data['errorCode']:
+                raise InvokeServerUnavailableError(f'http error {response_data["errorCode"]}')
+            response_data = response_data['data']
 
             # Extract embeddings and used tokens from the response
             embeddings_batch = [data['embedding'] for data in response_data['data']]
             embedding_used_tokens = response_data['usage']['total_tokens']
 
-            used_tokens += embedding_used_tokens
+            used_tokens += int(embedding_used_tokens)
             batched_embeddings += embeddings_batch
 
         # calc usage

@@ -1,7 +1,6 @@
 import concurrent
 import json
 import logging
-
 from concurrent.futures import ThreadPoolExecutor
 from typing import Tuple, Optional
 
@@ -84,7 +83,7 @@ class ExternalDataFetchFeature:
                 tenant_id=tenant_id,
                 app_id=app_id,
                 variable=tool_variable,
-                config=tool_config
+                config=tool_config,
             )
 
             # query external data tool

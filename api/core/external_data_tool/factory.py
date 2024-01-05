@@ -1,22 +1,26 @@
 from typing import Optional
 
-from langchain.embeddings.base import Embeddings
-
+from core.embedding.cached_embedding import CacheEmbedding
 from core.extension.extensible import ExtensionModule
+from core.model_manager import ModelManager
+from core.model_runtime.entities.model_entities import ModelType
 from extensions.ext_code_based_extension import code_based_extension
 
 
 class ExternalDataToolFactory:
 
-    def __init__(self, name: str, tenant_id: str, app_id: str, variable: str, config: dict,
-                 embeddings: Embeddings = None) -> None:
+    def __init__(self, name: str, tenant_id: str, app_id: str, variable: str, config: dict) -> None:
         extension_class = code_based_extension.extension_class(ExtensionModule.EXTERNAL_DATA_TOOL, name)
+        embedding_model = ModelManager().get_default_model_instance(
+            tenant_id=tenant_id,
+            model_type=ModelType.TEXT_EMBEDDING)
+
         self.__extension_instance = extension_class(
             tenant_id=tenant_id,
             app_id=app_id,
             variable=variable,
             config=config,
-            embeddings=embeddings
+            embeddings=CacheEmbedding(embedding_model)
         )
 
     @classmethod
