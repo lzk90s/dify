@@ -142,12 +142,11 @@ class ApolloClient(object):
             return default_val
 
     def _uncached_http_get(self, namespace='APP_ALL'):
-        url = f'{self.choose_server_url()}/configs/{self.appId}/{self.cluster}/{namespace}?ip={self.ip}'
+        url = f'{self.choose_server_url()}/configs/{self.appId}/{self.cluster}/{namespace}?ip={self.ip}&sk=true'
+        logger.info(f'request url {url}')
         r = requests.get(url)
         if r.status_code == 200:
             data = r.json()
-            logger.info(f'config {data}')
-            
             self._cache[namespace] = data['configurations']
             release_key = data['releaseKey']
             # logging.getLogger(__name__).info('Updated local cache for namespace %s release key %s: %s',
