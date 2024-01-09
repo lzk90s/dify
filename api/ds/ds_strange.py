@@ -44,7 +44,7 @@ class Strange:
         self.security = security
         self.crt = crt
         self.env = env
-        logger.info(f'Strange: url={url}, app_id={app_id}, env={env}')
+        print(f'Strange: url={url}, app_id={app_id}, env={env}')
 
     def refresh_token(self):
         url = f'{self.url}/account/verify'

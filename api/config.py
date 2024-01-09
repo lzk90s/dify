@@ -39,6 +39,7 @@ DEFAULTS = {
     'WEAVIATE_BATCH_SIZE': 100,
     'QDRANT_CLIENT_TIMEOUT': 20,
     'CELERY_BACKEND': 'database',
+    'LOG_HOME': 'logs',
     'LOG_LEVEL': 'INFO',
     'HOSTED_OPENAI_QUOTA_LIMIT': 200,
     'HOSTED_OPENAI_ENABLED': 'False',
@@ -97,6 +98,7 @@ class Config:
         self.DEPLOY_ENV = get_env('DEPLOY_ENV')
         self.TESTING = False
         self.LOG_LEVEL = get_env('LOG_LEVEL')
+        self.LOG_HOME = get_env('LOG_HOME')
 
         # The backend URL prefix of the console API.
         # used to concatenate the login authorization callback or notion integration callback.

@@ -63,7 +63,7 @@ class ApolloClient(object):
         if not self.config_server_urls:
             raise ValueError('No config services')
 
-        logger.info(f"config server urls {self.config_server_urls}")
+        print(f"config server urls {self.config_server_urls}")
 
         self._stopping = False
         self._cache = {}
@@ -143,7 +143,7 @@ class ApolloClient(object):
 
     def _uncached_http_get(self, namespace='APP_ALL'):
         url = f'{self.choose_server_url()}/configs/{self.appId}/{self.cluster}/{namespace}?ip={self.ip}&sk=true'
-        logger.info(f'request url {url}')
+        print(f'request url {url}')
         r = requests.get(url)
         if r.status_code == 200:
             data = r.json()
