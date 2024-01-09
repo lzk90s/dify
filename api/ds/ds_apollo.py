@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import os.path
 import random
 import threading
@@ -7,6 +8,8 @@ import requests
 import yaml
 
 import config
+
+logger = logging.getLogger(__name__)
 
 
 class GlobalVar(dict):
@@ -59,6 +62,8 @@ class ApolloClient(object):
 
         if not self.config_server_urls:
             raise ValueError('No config services')
+
+        logger.info(f"config server urls {self.config_server_urls}")
 
         self._stopping = False
         self._cache = {}
@@ -141,6 +146,8 @@ class ApolloClient(object):
         r = requests.get(url)
         if r.status_code == 200:
             data = r.json()
+            logger.info(f'config {data}')
+            
             self._cache[namespace] = data['configurations']
             release_key = data['releaseKey']
             # logging.getLogger(__name__).info('Updated local cache for namespace %s release key %s: %s',
