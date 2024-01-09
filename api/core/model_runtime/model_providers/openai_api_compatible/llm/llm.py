@@ -83,7 +83,7 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
         """
         try:
             headers = {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json; charset=utf-8'
             }
 
             api_key = credentials.get('api_key')
@@ -125,6 +125,7 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                 json=data,
                 timeout=(10, 60)
             )
+            response.encoding = 'utf-8'
 
             if response.status_code != 200:
                 raise CredentialsValidateFailedError(
@@ -249,7 +250,7 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
         :return: full response or stream response chunk generator result
         """
         headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json; charset=utf-8'
         }
 
         api_key = credentials.get('api_key')
@@ -301,6 +302,7 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
             timeout=(10, 60),
             stream=stream
         )
+        response.encoding = 'utf-8'
 
         if response.status_code != 200:
             raise InvokeError(f"API request failed with status code {response.status_code}: {response.text}")
@@ -366,11 +368,11 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                 chunk_index += 1
 
                 # check payload indicator for completion
-                if chunk_json['choices'][0].get('finish_reason') is not None:
+                if 'finish_reason' in choice and choice.get('finish_reason') is not None:
                     yield create_final_llm_result_chunk(
                         index=chunk_index + 1,
                         message=assistant_prompt_message,
-                        finish_reason=chunk_json['choices'][0]['finish_reason']
+                        finish_reason=choice['finish_reason']
                     )
                 else:
                     if 'delta' in choice:

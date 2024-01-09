@@ -2,6 +2,7 @@ import json
 import os
 import re
 import time
+from urllib.parse import parse_qs, urlencode
 
 import requests
 
@@ -107,7 +108,8 @@ class StrangeAdapter:
     def init(self):
         app_id = config.get_env('APOLLO_APP_ID')
         if not app_id:
-            raise ValueError('No app id')
+            return
+        
         env = ApolloData.get('runtime.env')
         if not env:
             raise ValueError('No runtime.env')
@@ -128,8 +130,10 @@ class StrangeAdapter:
         self.update_env_from_strange(res_dict)
 
     def update_env_from_strange(self, res_dict: dict):
-        self.update_redis_config(res_dict[config.get_env('REDIS_DB')])
-        self.update_db_config(res_dict[config.get_env('DB_DATABASE')])
+        if config.get_env('REDIS_DB_ROUTE'):
+            self.update_redis_config(res_dict[config.get_env('REDIS_DB_ROUTE')])
+        if config.get_env('DB_DATABASE_ROUTE'):
+            self.update_db_config(res_dict[config.get_env('DB_DATABASE_ROUTE')])
 
     def update_redis_config(self, routes):
         if not routes:
@@ -155,7 +159,7 @@ class StrangeAdapter:
 
         route = routes[0]
         address = str(route['address']).split('?')
-        extras = address[1]
+        extras = parse_qs(address[1])
         host = route['host']
         port = route['port']
         user = route['username']
@@ -167,7 +171,11 @@ class StrangeAdapter:
         self.update_env('DB_USERNAME', user)
         self.update_env('DB_PASSWORD', password)
         self.update_env('DB_DATABASE', database)
-        self.update_env('DB_EXTRAS', extras)
+        extras_kwargs = {
+            'charset': 'utf8',
+            'use_unicode': True,
+        }
+        self.update_env('DB_EXTRAS', urlencode(extras_kwargs))
 
 
 def init():

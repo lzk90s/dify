@@ -1,5 +1,7 @@
 from enum import Enum
 
+from sqlalchemy import FetchedValue
+
 from core.sqltype import UUID, gen_uuid
 from extensions.ext_database import db
 
@@ -46,20 +48,20 @@ class Provider(db.Model):
                             name='unique_provider_name_type_quota')
     )
 
-    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid, server_default=FetchedValue())
     tenant_id = db.Column(UUID, default=gen_uuid, nullable=False)
     provider_name = db.Column(db.String(40), nullable=False)
-    provider_type = db.Column(db.String(40), nullable=False, server_default=db.text("'custom'::character varying"))
+    provider_type = db.Column(db.String(40), nullable=False, server_default=FetchedValue())
     encrypted_config = db.Column(db.Text, nullable=True)
-    is_valid = db.Column(db.Boolean, nullable=False, server_default=db.text('false'))
-    last_used = db.Column(db.DateTime, nullable=True)
+    is_valid = db.Column(db.Boolean, nullable=False, server_default=FetchedValue())
+    last_used = db.Column(db.DateTime, nullable=True, server_default=FetchedValue())
 
-    quota_type = db.Column(db.String(40), nullable=True, server_default=db.text("''::character varying"))
-    quota_limit = db.Column(db.BigInteger, nullable=True)
+    quota_type = db.Column(db.String(40), nullable=True, server_default=FetchedValue())
+    quota_limit = db.Column(db.BigInteger, nullable=True, server_default=FetchedValue())
     quota_used = db.Column(db.BigInteger, default=0)
 
-    created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
-    updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
+    updated_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
     def __repr__(self):
         return f"<Provider(id={self.id}, tenant_id={self.tenant_id}, provider_name='{self.provider_name}', provider_type='{self.provider_type}')>"
@@ -93,15 +95,15 @@ class ProviderModel(db.Model):
         db.UniqueConstraint('tenant_id', 'provider_name', 'model_name', 'model_type', name='unique_provider_model_name')
     )
 
-    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid, server_default=FetchedValue())
     tenant_id = db.Column(UUID, default=gen_uuid, nullable=False)
     provider_name = db.Column(db.String(40), nullable=False)
     model_name = db.Column(db.String(255), nullable=False)
     model_type = db.Column(db.String(40), nullable=False)
-    encrypted_config = db.Column(db.Text, nullable=True)
-    is_valid = db.Column(db.Boolean, nullable=False, server_default=db.text('false'))
-    created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
-    updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    encrypted_config = db.Column(db.Text, nullable=True, server_default=FetchedValue())
+    is_valid = db.Column(db.Boolean, nullable=False, server_default=FetchedValue())
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
+    updated_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
 
 class TenantDefaultModel(db.Model):
@@ -111,13 +113,13 @@ class TenantDefaultModel(db.Model):
         db.Index('tenant_default_model_tenant_id_provider_type_idx', 'tenant_id', 'provider_name', 'model_type'),
     )
 
-    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid, server_default=FetchedValue())
     tenant_id = db.Column(UUID, default=gen_uuid, nullable=False)
     provider_name = db.Column(db.String(40), nullable=False)
     model_name = db.Column(db.String(40), nullable=False)
     model_type = db.Column(db.String(40), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
-    updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
+    updated_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
 
 class TenantPreferredModelProvider(db.Model):
@@ -127,12 +129,12 @@ class TenantPreferredModelProvider(db.Model):
         db.Index('tenant_preferred_model_provider_tenant_provider_idx', 'tenant_id', 'provider_name'),
     )
 
-    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid, server_default=FetchedValue())
     tenant_id = db.Column(UUID, default=gen_uuid, nullable=False)
     provider_name = db.Column(db.String(40), nullable=False)
     preferred_provider_type = db.Column(db.String(40), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
-    updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
+    updated_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
 
 class ProviderOrder(db.Model):
@@ -142,19 +144,19 @@ class ProviderOrder(db.Model):
         db.Index('provider_order_tenant_provider_idx', 'tenant_id', 'provider_name'),
     )
 
-    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid, server_default=FetchedValue())
     tenant_id = db.Column(UUID, default=gen_uuid, nullable=False)
     provider_name = db.Column(db.String(40), nullable=False)
     account_id = db.Column(UUID, default=gen_uuid, nullable=False)
     payment_product_id = db.Column(db.String(191), nullable=False)
     payment_id = db.Column(db.String(191))
     transaction_id = db.Column(db.String(191))
-    quantity = db.Column(db.Integer, nullable=False, server_default=db.text('1'))
+    quantity = db.Column(db.Integer, nullable=False, server_default=FetchedValue())
     currency = db.Column(db.String(40))
     total_amount = db.Column(db.Integer)
-    payment_status = db.Column(db.String(40), nullable=False, server_default=db.text("'wait_pay'::character varying"))
+    payment_status = db.Column(db.String(40), nullable=False, server_default=FetchedValue())
     paid_at = db.Column(db.DateTime)
     pay_failed_at = db.Column(db.DateTime)
     refunded_at = db.Column(db.DateTime)
-    created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
-    updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
+    updated_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())

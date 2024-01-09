@@ -37,7 +37,7 @@ class OAICompatEmbeddingModel(_CommonOAI_API_Compat, TextEmbeddingModel):
 
         # Prepare headers and payload for the request
         headers = {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json; charset=utf-8'
         }
 
         api_key = credentials.get('api_key')
@@ -98,6 +98,7 @@ class OAICompatEmbeddingModel(_CommonOAI_API_Compat, TextEmbeddingModel):
                 data=json.dumps(payload),
                 timeout=(10, 300)
             )
+            response.encoding = 'utf-8'
 
             response.raise_for_status()  # Raise an exception for HTTP errors
             response_data = response.json()
@@ -118,7 +119,7 @@ class OAICompatEmbeddingModel(_CommonOAI_API_Compat, TextEmbeddingModel):
             credentials=credentials,
             tokens=used_tokens
         )
-        
+
         return TextEmbeddingResult(
             embeddings=batched_embeddings,
             usage=usage,
@@ -146,7 +147,7 @@ class OAICompatEmbeddingModel(_CommonOAI_API_Compat, TextEmbeddingModel):
         """
         try:
             headers = {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json; charset=utf-8'
             }
 
             api_key = credentials.get('api_key')
@@ -172,6 +173,7 @@ class OAICompatEmbeddingModel(_CommonOAI_API_Compat, TextEmbeddingModel):
                 data=json.dumps(payload),
                 timeout=(10, 300)
             )
+            response.encoding = 'utf-8'
 
             if response.status_code != 200:
                 raise CredentialsValidateFailedError(

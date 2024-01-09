@@ -2,7 +2,7 @@ import json
 import pickle
 from json import JSONDecodeError
 
-from sqlalchemy import func, JSON
+from sqlalchemy import func, JSON, FetchedValue
 
 from core.sqltype import UUID, gen_uuid
 from extensions.ext_database import db
@@ -20,27 +20,23 @@ class Dataset(db.Model):
 
     INDEXING_TECHNIQUE_LIST = ['high_quality', 'economy']
 
-    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid, server_default=FetchedValue())
     tenant_id = db.Column(UUID, nullable=False)
     name = db.Column(db.String(255), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    provider = db.Column(db.String(255), nullable=False,
-                         server_default=db.text("'vendor'::character varying"))
-    permission = db.Column(db.String(255), nullable=False,
-                           server_default=db.text("'only_me'::character varying"))
-    data_source_type = db.Column(db.String(255))
-    indexing_technique = db.Column(db.String(255), nullable=True)
-    index_struct = db.Column(db.Text, nullable=True)
+    description = db.Column(db.Text, nullable=True, server_default=FetchedValue())
+    provider = db.Column(db.String(255), nullable=False, server_default=FetchedValue())
+    permission = db.Column(db.String(255), nullable=False, server_default=FetchedValue())
+    data_source_type = db.Column(db.String(255), server_default=FetchedValue())
+    indexing_technique = db.Column(db.String(255), nullable=True, server_default=FetchedValue())
+    index_struct = db.Column(db.Text, nullable=True, server_default=FetchedValue())
     created_by = db.Column(UUID, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False,
-                           server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
     updated_by = db.Column(UUID, nullable=True)
-    updated_at = db.Column(db.DateTime, nullable=False,
-                           server_default=db.text('CURRENT_TIMESTAMP(0)'))
-    embedding_model = db.Column(db.String(255), nullable=True)
-    embedding_model_provider = db.Column(db.String(255), nullable=True)
-    collection_binding_id = db.Column(UUID, nullable=True)
-    retrieval_model = db.Column(JSON, nullable=True)
+    updated_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
+    embedding_model = db.Column(db.String(255), nullable=True, server_default=FetchedValue())
+    embedding_model_provider = db.Column(db.String(255), nullable=True, server_default=FetchedValue())
+    collection_binding_id = db.Column(UUID, nullable=True, server_default=FetchedValue())
+    retrieval_model = db.Column(JSON, nullable=True, default=db.text("'{}'"), server_default=FetchedValue())
 
     @property
     def dataset_keyword_table(self):
@@ -116,15 +112,12 @@ class DatasetProcessRule(db.Model):
         db.Index('dataset_process_rule_dataset_id_idx', 'dataset_id'),
     )
 
-    id = db.Column(UUID, nullable=False, default=gen_uuid,
-                   server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, nullable=False, default=gen_uuid, server_default=FetchedValue())
     dataset_id = db.Column(UUID, nullable=False)
-    mode = db.Column(db.String(255), nullable=False,
-                     server_default=db.text("'automatic'::character varying"))
-    rules = db.Column(db.Text, nullable=True)
+    mode = db.Column(db.String(255), nullable=False, server_default=FetchedValue())
+    rules = db.Column(db.Text, nullable=True, server_default=FetchedValue())
     created_by = db.Column(UUID, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False,
-                           server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
     MODES = ['automatic', 'custom']
     PRE_PROCESSING_RULES = ['remove_stopwords', 'remove_extra_spaces', 'remove_urls_emails']
@@ -166,69 +159,64 @@ class Document(db.Model):
     )
 
     # initial fields
-    id = db.Column(UUID, nullable=False, default=gen_uuid,
-                   server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, nullable=False, default=gen_uuid, server_default=FetchedValue())
     tenant_id = db.Column(UUID, nullable=False)
     dataset_id = db.Column(UUID, nullable=False)
     position = db.Column(db.Integer, nullable=False)
     data_source_type = db.Column(db.String(255), nullable=False)
-    data_source_info = db.Column(db.Text, nullable=True)
-    dataset_process_rule_id = db.Column(UUID, nullable=True)
+    data_source_info = db.Column(db.Text, nullable=True, server_default=FetchedValue())
+    dataset_process_rule_id = db.Column(UUID, nullable=True, server_default=FetchedValue())
     batch = db.Column(db.String(255), nullable=False)
     name = db.Column(db.String(255), nullable=False)
     created_from = db.Column(db.String(255), nullable=False)
     created_by = db.Column(UUID, nullable=False)
-    created_api_request_id = db.Column(UUID, nullable=True)
-    created_at = db.Column(db.DateTime, nullable=False,
-                           server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    created_api_request_id = db.Column(UUID, nullable=True, server_default=FetchedValue())
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
     # start processing
-    processing_started_at = db.Column(db.DateTime, nullable=True)
+    processing_started_at = db.Column(db.DateTime, nullable=True, server_default=FetchedValue())
 
     # parsing
-    file_id = db.Column(db.Text, nullable=True)
-    word_count = db.Column(db.Integer, nullable=True)
-    parsing_completed_at = db.Column(db.DateTime, nullable=True)
+    file_id = db.Column(db.Text, nullable=True, server_default=FetchedValue())
+    word_count = db.Column(db.Integer, nullable=True, server_default=FetchedValue())
+    parsing_completed_at = db.Column(db.DateTime, nullable=True, server_default=FetchedValue())
 
     # cleaning
-    cleaning_completed_at = db.Column(db.DateTime, nullable=True)
+    cleaning_completed_at = db.Column(db.DateTime, nullable=True, server_default=FetchedValue())
 
     # split
-    splitting_completed_at = db.Column(db.DateTime, nullable=True)
+    splitting_completed_at = db.Column(db.DateTime, nullable=True, server_default=FetchedValue())
 
     # indexing
-    tokens = db.Column(db.Integer, nullable=True)
-    indexing_latency = db.Column(db.Float, nullable=True)
-    completed_at = db.Column(db.DateTime, nullable=True)
+    tokens = db.Column(db.Integer, nullable=True, server_default=FetchedValue())
+    indexing_latency = db.Column(db.Float, nullable=True, server_default=FetchedValue())
+    completed_at = db.Column(db.DateTime, nullable=True, server_default=FetchedValue())
 
     # pause
-    is_paused = db.Column(db.Boolean, nullable=True, server_default=db.text('false'))
-    paused_by = db.Column(UUID, nullable=True)
-    paused_at = db.Column(db.DateTime, nullable=True)
+    is_paused = db.Column(db.Boolean, nullable=True, server_default=FetchedValue())
+    paused_by = db.Column(UUID, nullable=True, server_default=FetchedValue())
+    paused_at = db.Column(db.DateTime, nullable=True, server_default=FetchedValue())
 
     # error
-    error = db.Column(db.Text, nullable=True)
-    stopped_at = db.Column(db.DateTime, nullable=True)
+    error = db.Column(db.Text, nullable=True, server_default=FetchedValue())
+    stopped_at = db.Column(db.DateTime, nullable=True, server_default=FetchedValue())
 
     # basic fields
     indexing_status = db.Column(db.String(
-        255), nullable=False, server_default=db.text("'waiting'::character varying"))
-    enabled = db.Column(db.Boolean, nullable=False,
-                        server_default=db.text('true'))
-    disabled_at = db.Column(db.DateTime, nullable=True)
-    disabled_by = db.Column(UUID, nullable=True)
-    archived = db.Column(db.Boolean, nullable=False,
-                         server_default=db.text('false'))
-    archived_reason = db.Column(db.String(255), nullable=True)
-    archived_by = db.Column(UUID, nullable=True)
-    archived_at = db.Column(db.DateTime, nullable=True)
-    updated_at = db.Column(db.DateTime, nullable=False,
-                           server_default=db.text('CURRENT_TIMESTAMP(0)'))
-    doc_type = db.Column(db.String(40), nullable=True)
-    doc_metadata = db.Column(db.JSON, nullable=True)
+        255), nullable=False, server_default=FetchedValue())
+    enabled = db.Column(db.Boolean, nullable=False, server_default=FetchedValue())
+    disabled_at = db.Column(db.DateTime, nullable=True, server_default=FetchedValue())
+    disabled_by = db.Column(UUID, nullable=True, server_default=FetchedValue())
+    archived = db.Column(db.Boolean, nullable=False, server_default=FetchedValue())
+    archived_reason = db.Column(db.String(255), nullable=True, server_default=FetchedValue())
+    archived_by = db.Column(UUID, nullable=True, server_default=FetchedValue())
+    archived_at = db.Column(db.DateTime, nullable=True, server_default=FetchedValue())
+    updated_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
+    doc_type = db.Column(db.String(40), nullable=True, server_default=FetchedValue())
+    doc_metadata = db.Column(db.JSON, nullable=True, default=db.text("'{}'"), server_default=FetchedValue())
     doc_form = db.Column(db.String(
-        255), nullable=False, server_default=db.text("'text_model'::character varying"))
-    doc_language = db.Column(db.String(255), nullable=True)
+        255), nullable=False, server_default=FetchedValue())
+    doc_language = db.Column(db.String(255), nullable=True, server_default=FetchedValue())
 
     DATA_SOURCES = ['upload_file', 'notion_import']
 
@@ -324,40 +312,35 @@ class DocumentSegment(db.Model):
     )
 
     # initial fields
-    id = db.Column(UUID, nullable=False, default=gen_uuid,
-                   server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, nullable=False, default=gen_uuid, server_default=FetchedValue())
     tenant_id = db.Column(UUID, nullable=False)
     dataset_id = db.Column(UUID, nullable=False)
     document_id = db.Column(UUID, nullable=False)
     position = db.Column(db.Integer, nullable=False)
     content = db.Column(db.Text, nullable=False)
-    answer = db.Column(db.Text, nullable=True)
+    answer = db.Column(db.Text, nullable=True, server_default=FetchedValue())
     word_count = db.Column(db.Integer, nullable=False)
     tokens = db.Column(db.Integer, nullable=False)
 
     # indexing fields
-    keywords = db.Column(db.JSON, nullable=True)
-    index_node_id = db.Column(db.String(255), nullable=True)
-    index_node_hash = db.Column(db.String(255), nullable=True)
+    keywords = db.Column(db.JSON, nullable=True, default=db.text("'{}'"), server_default=FetchedValue())
+    index_node_id = db.Column(db.String(255), nullable=True, server_default=FetchedValue())
+    index_node_hash = db.Column(db.String(255), nullable=True, server_default=FetchedValue())
 
     # basic fields
     hit_count = db.Column(db.Integer, nullable=False, default=0)
-    enabled = db.Column(db.Boolean, nullable=False,
-                        server_default=db.text('true'))
-    disabled_at = db.Column(db.DateTime, nullable=True)
-    disabled_by = db.Column(UUID, nullable=True)
-    status = db.Column(db.String(255), nullable=False,
-                       server_default=db.text("'waiting'::character varying"))
+    enabled = db.Column(db.Boolean, nullable=False, server_default=FetchedValue())
+    disabled_at = db.Column(db.DateTime, nullable=True, server_default=FetchedValue())
+    disabled_by = db.Column(UUID, nullable=True, server_default=FetchedValue())
+    status = db.Column(db.String(255), nullable=False, server_default=FetchedValue())
     created_by = db.Column(UUID, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False,
-                           server_default=db.text('CURRENT_TIMESTAMP(0)'))
-    updated_by = db.Column(UUID, nullable=True)
-    updated_at = db.Column(db.DateTime, nullable=False,
-                           server_default=db.text('CURRENT_TIMESTAMP(0)'))
-    indexing_at = db.Column(db.DateTime, nullable=True)
-    completed_at = db.Column(db.DateTime, nullable=True)
-    error = db.Column(db.Text, nullable=True)
-    stopped_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
+    updated_by = db.Column(UUID, nullable=True, server_default=FetchedValue())
+    updated_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
+    indexing_at = db.Column(db.DateTime, nullable=True, server_default=FetchedValue())
+    completed_at = db.Column(db.DateTime, nullable=True, server_default=FetchedValue())
+    error = db.Column(db.Text, nullable=True, server_default=FetchedValue())
+    stopped_at = db.Column(db.DateTime, nullable=True, server_default=FetchedValue())
 
     @property
     def dataset(self):
@@ -389,11 +372,10 @@ class AppDatasetJoin(db.Model):
         db.Index('app_dataset_join_app_dataset_idx', 'dataset_id', 'app_id'),
     )
 
-    id = db.Column(UUID, primary_key=True, default=gen_uuid, nullable=False,
-                   server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, primary_key=True, default=gen_uuid, nullable=False, server_default=FetchedValue())
     app_id = db.Column(UUID, nullable=False)
     dataset_id = db.Column(UUID, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.current_timestamp())
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
     @property
     def app(self):
@@ -407,15 +389,14 @@ class DatasetQuery(db.Model):
         db.Index('dataset_query_dataset_id_idx', 'dataset_id'),
     )
 
-    id = db.Column(UUID, primary_key=True, default=gen_uuid, nullable=False,
-                   server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, primary_key=True, default=gen_uuid, nullable=False, server_default=FetchedValue())
     dataset_id = db.Column(UUID, nullable=False)
     content = db.Column(db.Text, nullable=False)
     source = db.Column(db.String(255), nullable=False)
-    source_app_id = db.Column(UUID, nullable=True)
+    source_app_id = db.Column(UUID, nullable=True, server_default=FetchedValue())
     created_by_role = db.Column(db.String, nullable=False)
     created_by = db.Column(UUID, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, server_default=db.func.current_timestamp())
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
 
 class DatasetKeywordTable(db.Model):
@@ -425,8 +406,7 @@ class DatasetKeywordTable(db.Model):
         db.Index('dataset_keyword_table_dataset_id_idx', 'dataset_id'),
     )
 
-    id = db.Column(UUID, primary_key=True, default=gen_uuid,
-                   server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, primary_key=True, default=gen_uuid, server_default=FetchedValue())
     dataset_id = db.Column(UUID, nullable=False, unique=True)
     keyword_table = db.Column(db.Text, nullable=False)
 
@@ -453,13 +433,11 @@ class Embedding(db.Model):
         db.UniqueConstraint('model_name', 'hash', name='embedding_hash_idx')
     )
 
-    id = db.Column(UUID, primary_key=True, default=gen_uuid,
-                   server_default=db.text('uuid_generate_v4()'))
-    model_name = db.Column(db.String(40), nullable=False,
-                           server_default=db.text("'text-embedding-ada-002'::character varying"))
+    id = db.Column(UUID, primary_key=True, default=gen_uuid, server_default=FetchedValue())
+    model_name = db.Column(db.String(40), nullable=False, server_default=FetchedValue())
     hash = db.Column(db.String(64), nullable=False)
     embedding = db.Column(db.LargeBinary, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
     def set_embedding(self, embedding_data: list[float]):
         self.embedding = pickle.dumps(embedding_data, protocol=pickle.HIGHEST_PROTOCOL)
@@ -476,10 +454,9 @@ class DatasetCollectionBinding(db.Model):
 
     )
 
-    id = db.Column(UUID, primary_key=True, default=gen_uuid,
-                   server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, primary_key=True, default=gen_uuid, server_default=FetchedValue())
     provider_name = db.Column(db.String(40), nullable=False)
     model_name = db.Column(db.String(40), nullable=False)
-    type = db.Column(db.String(40), server_default=db.text("'dataset'::character varying"), nullable=False)
+    type = db.Column(db.String(40), server_default=FetchedValue(), nullable=False)
     collection_name = db.Column(db.String(64), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())

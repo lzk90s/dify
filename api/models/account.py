@@ -3,6 +3,7 @@ import json
 from typing import List
 
 from flask_login import UserMixin
+from sqlalchemy import FetchedValue
 
 from core.sqltype import UUID, gen_uuid
 from extensions.ext_database import db
@@ -23,22 +24,22 @@ class Account(UserMixin, db.Model):
         db.Index('account_email_idx', 'email')
     )
 
-    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid)
     name = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), nullable=False)
     password = db.Column(db.String(255), nullable=True)
-    password_salt = db.Column(db.String(255), nullable=True)
-    avatar = db.Column(db.String(255))
-    interface_language = db.Column(db.String(255))
-    interface_theme = db.Column(db.String(255))
-    timezone = db.Column(db.String(255))
-    last_login_at = db.Column(db.DateTime)
-    last_login_ip = db.Column(db.String(255))
-    last_active_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
-    status = db.Column(db.String(16), nullable=False, server_default=db.text("'active'::character varying"))
-    initialized_at = db.Column(db.DateTime)
-    created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
-    updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    password_salt = db.Column(db.String(255), nullable=True, server_default=FetchedValue())
+    avatar = db.Column(db.String(255), server_default=FetchedValue())
+    interface_language = db.Column(db.String(255), server_default=FetchedValue())
+    interface_theme = db.Column(db.String(255), server_default=FetchedValue())
+    timezone = db.Column(db.String(255), server_default=FetchedValue())
+    last_login_at = db.Column(db.DateTime, server_default=FetchedValue())
+    last_login_ip = db.Column(db.String(255), server_default=FetchedValue())
+    last_active_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
+    status = db.Column(db.String(16), nullable=False, server_default=FetchedValue())
+    initialized_at = db.Column(db.DateTime, server_default=FetchedValue())
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
+    updated_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
     @property
     def is_password_set(self):
@@ -109,14 +110,14 @@ class Tenant(db.Model):
         db.PrimaryKeyConstraint('id', name='tenant_pkey'),
     )
 
-    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid)
     name = db.Column(db.String(255), nullable=False)
-    encrypt_public_key = db.Column(db.Text)
-    plan = db.Column(db.String(255), nullable=False, server_default=db.text("'basic'::character varying"))
-    status = db.Column(db.String(255), nullable=False, server_default=db.text("'normal'::character varying"))
-    custom_config = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
-    updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    encrypt_public_key = db.Column(db.Text, server_default=FetchedValue())
+    plan = db.Column(db.String(255), nullable=False, server_default=FetchedValue())
+    status = db.Column(db.String(255), nullable=False, server_default=FetchedValue())
+    custom_config = db.Column(db.Text, server_default=FetchedValue())
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
+    updated_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
     def get_accounts(self) -> List[db.Model]:
         Account = db.Model
@@ -149,13 +150,13 @@ class TenantAccountJoin(db.Model):
         db.UniqueConstraint('tenant_id', 'account_id', name='unique_tenant_account_join')
     )
 
-    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid)
     tenant_id = db.Column(UUID, default=gen_uuid, nullable=False)
     account_id = db.Column(UUID, default=gen_uuid, nullable=False)
-    role = db.Column(db.String(16), nullable=False, server_default='normal')
-    invited_by = db.Column(UUID, default=gen_uuid, nullable=True)
-    created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
-    updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    role = db.Column(db.String(16), nullable=False, server_default=FetchedValue())
+    invited_by = db.Column(UUID, default=gen_uuid, nullable=True, server_default=FetchedValue())
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
+    updated_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
 
 class AccountIntegrate(db.Model):
@@ -166,13 +167,13 @@ class AccountIntegrate(db.Model):
         db.UniqueConstraint('provider', 'open_id', name='unique_provider_open_id')
     )
 
-    id = db.Column(UUID, default=gen_uuid, server_default=db.text('uuid_generate_v4()'))
-    account_id = db.Column(UUID, default=gen_uuid, nullable=False)
-    provider = db.Column(db.String(16), nullable=False)
-    open_id = db.Column(db.String(255), nullable=False)
-    encrypted_token = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
-    updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    id = db.Column(UUID, default=gen_uuid, server_default=FetchedValue())
+    account_id = db.Column(UUID, default=gen_uuid, nullable=False, server_default=FetchedValue())
+    provider = db.Column(db.String(16), nullable=False, server_default=FetchedValue())
+    open_id = db.Column(db.String(255), nullable=False, server_default=FetchedValue())
+    encrypted_token = db.Column(db.String(255), nullable=False, server_default=FetchedValue())
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
+    updated_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
 
 class InvitationCode(db.Model):
@@ -183,12 +184,12 @@ class InvitationCode(db.Model):
         db.Index('invitation_codes_code_idx', 'code', 'status')
     )
 
-    id = db.Column(db.Integer, nullable=False)
-    batch = db.Column(db.String(255), nullable=False)
-    code = db.Column(db.String(32), nullable=False)
-    status = db.Column(db.String(16), nullable=False, server_default=db.text("'unused'::character varying"))
-    used_at = db.Column(db.DateTime)
-    used_by_tenant_id = db.Column(UUID)
-    used_by_account_id = db.Column(UUID)
-    deprecated_at = db.Column(db.DateTime)
-    created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
+    id = db.Column(db.Integer, nullable=False, server_default=FetchedValue())
+    batch = db.Column(db.String(255), nullable=False, server_default=FetchedValue())
+    code = db.Column(db.String(32), nullable=False, server_default=FetchedValue())
+    status = db.Column(db.String(16), nullable=False, server_default=FetchedValue())
+    used_at = db.Column(db.DateTime, server_default=FetchedValue())
+    used_by_tenant_id = db.Column(UUID, server_default=FetchedValue())
+    used_by_account_id = db.Column(UUID, server_default=FetchedValue())
+    deprecated_at = db.Column(db.DateTime, server_default=FetchedValue())
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())

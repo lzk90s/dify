@@ -70,7 +70,7 @@ config_type = os.getenv('EDITION', default='SELF_HOSTED')  # ce edition first
 def create_app(test_config=None) -> Flask:
     app = DifyApp(__name__)
 
-    # initialize_ds()
+    initialize_ds()
 
     if test_config:
         app.config.from_object(test_config)

@@ -10,20 +10,20 @@ from pydantic import ValidationError
 from core.app_runner.agent_app_runner import AgentApplicationRunner
 from core.app_runner.basic_app_runner import BasicApplicationRunner
 from core.app_runner.generate_task_pipeline import GenerateTaskPipeline
+from core.application_queue_manager import ApplicationQueueManager, ConversationTaskStoppedException
 from core.entities.application_entities import ApplicationGenerateEntity, AppOrchestrationConfigEntity, \
     ModelConfigEntity, PromptTemplateEntity, AdvancedChatPromptTemplateEntity, \
     AdvancedCompletionPromptTemplateEntity, ExternalDataVariableEntity, DatasetEntity, DatasetRetrieveConfigEntity, \
     AgentEntity, AgentToolEntity, FileUploadEntity, SensitiveWordAvoidanceEntity, InvokeFrom
 from core.entities.model_entities import ModelStatus
-from core.file.file_obj import FileObj
 from core.errors.error import QuotaExceededError, ProviderTokenNotInitError, ModelCurrentlyNotSupportError
+from core.file.file_obj import FileObj
 from core.model_runtime.entities.message_entities import PromptMessageRole
 from core.model_runtime.entities.model_entities import ModelType
 from core.model_runtime.errors.invoke import InvokeAuthorizationError, InvokeError
 from core.model_runtime.model_providers.__base.large_language_model import LargeLanguageModel
 from core.prompt.prompt_template import PromptTemplateParser
 from core.provider_manager import ProviderManager
-from core.application_queue_manager import ApplicationQueueManager, ConversationTaskStoppedException
 from extensions.ext_database import db
 from models.account import Account
 from models.model import EndUser, Conversation, Message, MessageFile, App
