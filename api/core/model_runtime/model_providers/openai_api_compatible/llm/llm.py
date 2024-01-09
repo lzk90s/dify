@@ -172,7 +172,8 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                     type=ParameterType.FLOAT,
                     default=float(credentials.get('temperature', 0.7)),
                     min=0,
-                    max=2
+                    max=2,
+                    precision=2
                 ),
                 ParameterRule(
                     name=DefaultParameterName.TOP_P.value,
@@ -180,7 +181,8 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                     type=ParameterType.FLOAT,
                     default=float(credentials.get('top_p', 1)),
                     min=0,
-                    max=1
+                    max=1,
+                    precision=2
                 ),
                 ParameterRule(
                     name="top_k",
@@ -250,7 +252,8 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
         :return: full response or stream response chunk generator result
         """
         headers = {
-            'Content-Type': 'application/json; charset=utf-8'
+            'Content-Type': 'application/json; charset=utf-8',
+            'Accept-Charset': 'utf-8',
         }
 
         api_key = credentials.get('api_key')
@@ -303,6 +306,9 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
             stream=stream
         )
         response.encoding = 'utf-8'
+
+        if response.encoding is None or response.encoding == 'ISO-8859-1':
+            response.encoding = 'utf-8'
 
         if response.status_code != 200:
             raise InvokeError(f"API request failed with status code {response.status_code}: {response.text}")
