@@ -6,6 +6,7 @@ from langchain.embeddings.base import Embeddings
 from sqlalchemy.exc import IntegrityError
 
 from core.model_manager import ModelInstance
+from core.sqltype import gen_uuid
 from extensions.ext_database import db
 from libs import helper
 from models.dataset import Embedding
@@ -47,7 +48,7 @@ class CacheEmbedding(Embeddings):
                 hash = helper.generate_text_hash(texts[indice])
 
                 try:
-                    embedding = Embedding(model_name=self._model_instance.model, hash=hash)
+                    embedding = Embedding(id=gen_uuid(), model_name=self._model_instance.model, hash=hash)
                     vector = embedding_results[i]
                     normalized_embedding = (vector / np.linalg.norm(vector)).tolist()
                     text_embeddings[indice] = normalized_embedding
@@ -83,7 +84,7 @@ class CacheEmbedding(Embeddings):
             raise ex
 
         try:
-            embedding = Embedding(model_name=self._model_instance.model, hash=hash)
+            embedding = Embedding(id=gen_uuid(), model_name=self._model_instance.model, hash=hash)
             embedding.set_embedding(embedding_results)
             db.session.add(embedding)
             db.session.commit()

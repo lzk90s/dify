@@ -1,5 +1,6 @@
 import json
 import pickle
+import zlib
 from json import JSONDecodeError
 
 from sqlalchemy import func, JSON, FetchedValue
@@ -426,6 +427,20 @@ class DatasetKeywordTable(db.Model):
         return json.loads(self.keyword_table, cls=SetDecoder) if self.keyword_table else None
 
 
+class EmbeddingSlice(db.Model):
+    __tablename__ = 'embedding_slices'
+    __table_args__ = (
+        db.PrimaryKeyConstraint('id', name='embedding_slice_pkey'),
+        db.UniqueConstraint('slice', 'index', name='embedding_hash_idx')
+    )
+
+    id = db.Column(UUID, primary_key=True, default=gen_uuid, server_default=FetchedValue())
+    embedding_id = db.Column(UUID, db.ForeignKey('embeddings.id'), nullable=False)
+    index = db.Column(db.Integer, nullable=False)
+    slice = db.Column(db.String(10000), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
+
+
 class Embedding(db.Model):
     __tablename__ = 'embeddings'
     __table_args__ = (
@@ -436,14 +451,36 @@ class Embedding(db.Model):
     id = db.Column(UUID, primary_key=True, default=gen_uuid, server_default=FetchedValue())
     model_name = db.Column(db.String(40), nullable=False, server_default=FetchedValue())
     hash = db.Column(db.String(64), nullable=False)
-    embedding = db.Column(db.LargeBinary, nullable=False)
+    embedding = db.Column(db.LargeBinary, nullable=False, server_default=FetchedValue())
     created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
+    embedding_slices = db.relationship("EmbeddingSlice", backref="embedding", lazy='select', passive_deletes="all")
+
     def set_embedding(self, embedding_data: list[float]):
-        self.embedding = pickle.dumps(embedding_data, protocol=pickle.HIGHEST_PROTOCOL)
+        embedding = pickle.dumps(embedding_data, protocol=pickle.HIGHEST_PROTOCOL)
+        hex_data = self.bytes2hex(embedding)
+        datas = self.split_string(hex_data, 10000)
+        for idx, value in enumerate(datas):
+            embedding_slice = EmbeddingSlice(embedding_id=self.id, index=idx, slice=value)
+            db.session.add(embedding_slice)
+        db.session.commit()
 
     def get_embedding(self) -> list[float]:
-        return pickle.loads(self.embedding)
+        sorted(self.embedding_slices, key=lambda x: x.index)
+        embedding = ''.join([s.slice for s in self.embedding_slices])
+        return pickle.loads(self.hex2bytes(embedding))
+
+    @classmethod
+    def bytes2hex(cls, bytes_data):
+        return zlib.compress(bytes_data).hex()
+
+    @classmethod
+    def hex2bytes(cls, hex_data: str):
+        return zlib.decompress(bytes.fromhex(hex_data))
+
+    @classmethod
+    def split_string(cls, st, length):
+        return [st[i:i + length] for i in range(0, len(st), length)]
 
 
 class DatasetCollectionBinding(db.Model):
