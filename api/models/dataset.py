@@ -297,8 +297,8 @@ class Document(db.Model):
 
     @property
     def hit_count(self):
-        return DocumentSegment.query.with_entities(func.coalesce(func.sum(DocumentSegment.hit_count))) \
-            .filter(DocumentSegment.document_id == self.id).scalar()
+        return int(DocumentSegment.query.with_entities(func.coalesce(func.sum(DocumentSegment.hit_count))) \
+                   .filter(DocumentSegment.document_id == self.id).scalar())
 
 
 class DocumentSegment(db.Model):
