@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import re
 import time
@@ -8,6 +9,8 @@ import requests
 
 import config
 from ds.ds_apollo import ApolloData
+
+logger = logging.getLogger(__name__)
 
 
 class StrangeError(Exception):
@@ -41,6 +44,7 @@ class Strange:
         self.security = security
         self.crt = crt
         self.env = env
+        logger.info(f'Strange: url={url}, app_id={app_id}, env={env}')
 
     def refresh_token(self):
         url = f'{self.url}/account/verify'
@@ -109,7 +113,7 @@ class StrangeAdapter:
         app_id = config.get_env('APOLLO_APP_ID')
         if not app_id:
             return
-        
+
         env = ApolloData.get('runtime.env')
         if not env:
             raise ValueError('No runtime.env')
