@@ -185,6 +185,8 @@ class Config:
         # Celery worker Configurations.
         # ------------------------
         self.CELERY_BROKER_URL = get_env('CELERY_BROKER_URL')
+        if not self.CELERY_BROKER_URL:
+            self.CELERY_BROKER_URL = f'redis://{self.REDIS_USERNAME}:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}'
         self.CELERY_BACKEND = get_env('CELERY_BACKEND')
         self.CELERY_RESULT_BACKEND = 'db+{}'.format(self.SQLALCHEMY_DATABASE_URI) \
             if self.CELERY_BACKEND == 'database' else self.CELERY_BROKER_URL
