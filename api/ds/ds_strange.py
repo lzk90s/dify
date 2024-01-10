@@ -34,11 +34,10 @@ class Strange:
     env: str = None
     token: str = None
 
-    def __init__(self, url: str, app_id: str, security: str, crt: str, env: str):
+    def __init__(self, url: str, app_id: str, security: str, env: str):
         self.url = url
         self.app_id = app_id
         self.security = security
-        self.crt = crt
         self.env = env
         print(f'Strange: url={url}, app_id={app_id}, env={env}')
 
@@ -119,16 +118,11 @@ class StrangeAdapter:
         strange_security = config.get_env('strange.app.security')
         if not strange_security:
             raise ValueError('No strange.app.security')
-        strange_crt = config.get_env('strange.crt')
-        if not strange_crt:
-            raise ValueError('No strange.crt')
 
-        self.client = Strange(strange_url.strip(), app_id.strip(),
-                              strange_security.strip(), strange_crt.strip(), env.strip())
+        self.client = Strange(strange_url.strip(), app_id.strip(), strange_security.strip(), env.strip())
         res_dict = self.client.fetch_resource()
-        if not res_dict:
-            return
-        self.update_env_from_strange(res_dict)
+        if res_dict:
+            self.update_env_from_strange(res_dict)
 
     def update_env_from_strange(self, res_dict: dict):
         if config.get_env('REDIS_DB_ROUTE'):
