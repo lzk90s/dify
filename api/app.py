@@ -35,7 +35,7 @@ from config import Config, CloudEditionConfig
 from commands import register_commands
 from services.account_service import AccountService
 from libs.passport import PassportService
-from ds import ds_apollo, ds_strange
+from ds import ds_strange
 
 import warnings
 
@@ -89,7 +89,6 @@ def create_app(test_config=None) -> Flask:
 
 
 def initialize_ds():
-    ds_apollo.init()
     ds_strange.init()
 
 

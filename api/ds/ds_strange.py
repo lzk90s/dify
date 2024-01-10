@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 import re
 import time
@@ -8,9 +7,6 @@ from urllib.parse import parse_qs, urlencode
 import requests
 
 import config
-from ds.ds_apollo import ApolloData
-
-logger = logging.getLogger(__name__)
 
 
 class StrangeError(Exception):
@@ -51,7 +47,7 @@ class Strange:
         r = requests.post(url, json={
             'name': self.app_id,
             'security': self.security
-        })
+        }, verify=False)
         if r.status_code != 200:
             raise StrangeError(500, r.text)
         data = r.json()
@@ -82,7 +78,7 @@ class Strange:
         url = f'{self.url}/resource/fetchAllByToken?env={self.env}'
         r = requests.get(url, headers={
             'token': self.token
-        })
+        }, verify=False)
         if r.status_code != 200:
             raise StrangeError(500, r.text)
         data = r.json()
@@ -110,24 +106,25 @@ class StrangeAdapter:
             return None
 
     def init(self):
-        app_id = config.get_env('APOLLO_APP_ID')
+        app_id = config.get_env('strange.app.id')
         if not app_id:
             return
 
-        env = ApolloData.get('runtime.env')
+        env = config.get_env('runtime.env')
         if not env:
             raise ValueError('No runtime.env')
-        strange_url = ApolloData.get('http.address')
+        strange_url = config.get_env('strange.url')
         if not strange_url:
-            raise ValueError('No http.address')
-        strange_security = ApolloData.get('strange.app.security')
+            raise ValueError('No strange.url')
+        strange_security = config.get_env('strange.app.security')
         if not strange_security:
             raise ValueError('No strange.app.security')
-        strange_crt = ApolloData.get('strange.crt')
+        strange_crt = config.get_env('strange.crt')
         if not strange_crt:
             raise ValueError('No strange.crt')
 
-        self.client = Strange(strange_url, app_id, strange_security, strange_crt, env)
+        self.client = Strange(strange_url.strip(), app_id.strip(),
+                              strange_security.strip(), strange_crt.strip(), env.strip())
         res_dict = self.client.fetch_resource()
         if not res_dict:
             return
@@ -156,6 +153,7 @@ class StrangeAdapter:
         self.update_env('REDIS_USERNAME', user)
         self.update_env('REDIS_PASSWORD', password)
         self.update_env('REDIS_DB', db)
+        print(f'Strange: update redis config, host={host}, port={port}')
 
     def update_db_config(self, routes):
         if not routes:
@@ -180,6 +178,7 @@ class StrangeAdapter:
             'use_unicode': True,
         }
         self.update_env('DB_EXTRAS', urlencode(extras_kwargs))
+        print(f'Strange: update db config, host={host}, port={port}, db={database}')
 
 
 def init():
