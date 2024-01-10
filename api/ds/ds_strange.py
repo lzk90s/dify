@@ -33,13 +33,21 @@ class Strange:
     crt: str = None
     env: str = None
     token: str = None
+    sk_file: str = 'apollo/sk'
 
-    def __init__(self, url: str, app_id: str, security: str, env: str):
+    def __init__(self, url: str, app_id: str, security: str, env: str, sk_file: str = 'apollo/sk'):
         self.url = url
         self.app_id = app_id
         self.security = security
         self.env = env
-        print(f'Strange: url={url}, app_id={app_id}, env={env}')
+        self.sk_file = sk_file
+        print(f'Strange: url={url}, app_id={app_id}, env={env}, sk_file={sk_file}')
+        self.dump_sk()
+
+    def dump_sk(self):
+        with open(self.sk_file, 'r', encoding='utf-8') as file:
+            content = file.read()
+            print(f'sk: {content}')
 
     def refresh_token(self):
         url = f'{self.url}/account/verify'
