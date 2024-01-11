@@ -297,8 +297,9 @@ class Document(db.Model):
 
     @property
     def hit_count(self):
-        return int(DocumentSegment.query.with_entities(func.coalesce(func.sum(DocumentSegment.hit_count))) \
-                   .filter(DocumentSegment.document_id == self.id).scalar())
+        c = DocumentSegment.query.with_entities(func.coalesce(func.sum(DocumentSegment.hit_count))) \
+            .filter(DocumentSegment.document_id == self.id).scalar()
+        return int(c) if c else 0
 
 
 class DocumentSegment(db.Model):
@@ -324,7 +325,7 @@ class DocumentSegment(db.Model):
     tokens = db.Column(db.Integer, nullable=False)
 
     # indexing fields
-    keywords = db.Column(db.JSON, nullable=True, default=db.text("'{}'"), server_default=FetchedValue())
+    keywords = db.Column(db.JSON, nullable=True, default=db.text("'[]'"), server_default=FetchedValue())
     index_node_id = db.Column(db.String(255), nullable=True, server_default=FetchedValue())
     index_node_hash = db.Column(db.String(255), nullable=True, server_default=FetchedValue())
 

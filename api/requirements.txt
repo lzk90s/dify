@@ -34,7 +34,7 @@ openpyxl==3.1.2
 chardet~=5.1.0
 docx2txt==0.8
 pypdfium2==4.16.0
-resend~=0.5.1
+resend~=0.7.0
 pyjwt~=2.6.0
 anthropic~=0.7.7
 newspaper3k==0.2.8
@@ -57,7 +57,6 @@ qdrant-client==1.6.4
 cohere~=4.32
 pyyaml~=6.0.1
 numpy~=1.25.2
-unstructured~=0.10.27
 unstructured[docx,pptx,msg,md,ppt]~=0.10.27
 bs4~=0.0.1
 markdown~=3.5.1
@@ -65,3 +64,7 @@ google-generativeai~=0.3.2
 apollo-client~=2.1.2
 mysql-connector-python~=8.2.0
 mysqlclient~=2.2.1
+httpx[socks]~=0.24.1
+opensearch-dsl~=2.1.0
+opensearch-py~=2.4.2
+pymysql~=1.1.0

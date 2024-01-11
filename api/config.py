@@ -37,6 +37,7 @@ DEFAULTS = {
     'SENTRY_PROFILES_SAMPLE_RATE': 1.0,
     'WEAVIATE_GRPC_ENABLED': 'True',
     'WEAVIATE_BATCH_SIZE': 100,
+    'STARROCKS_DATABASE': 'default',
     'QDRANT_CLIENT_TIMEOUT': 20,
     'CELERY_BACKEND': 'database',
     'LOG_HOME': 'logs',
@@ -92,7 +93,7 @@ class Config:
         # ------------------------
         # General Configurations.
         # ------------------------
-        self.CURRENT_VERSION = "0.4.4"
+        self.CURRENT_VERSION = "0.4.5"
         self.COMMIT_SHA = get_env('COMMIT_SHA')
         self.EDITION = "SELF_HOSTED"
         self.DEPLOY_ENV = get_env('DEPLOY_ENV')
@@ -176,7 +177,7 @@ class Config:
         # ------------------------
         self.REDIS_HOST = get_env('REDIS_HOST')
         self.REDIS_PORT = get_env('REDIS_PORT')
-        self.REDIS_USERNAME = get_env('REDIS_USERNAME')
+        self.REDIS_USERNAME = get_env('REDIS_USERNAME') if get_env('REDIS_USERNAME') else ''
         self.REDIS_PASSWORD = get_env('REDIS_PASSWORD')
         self.REDIS_DB = get_env('REDIS_DB')
         self.REDIS_USE_SSL = get_bool_env('REDIS_USE_SSL')
@@ -227,12 +228,19 @@ class Config:
         self.WEAVIATE_GRPC_ENABLED = get_bool_env('WEAVIATE_GRPC_ENABLED')
         self.WEAVIATE_BATCH_SIZE = int(get_env('WEAVIATE_BATCH_SIZE'))
 
+        # starrocks settings
+        self.STARROCKS_ENDPOINT = get_env('STARROCKS_ENDPOINT')
+        self.STARROCKS_USERNAME = get_env('STARROCKS_USERNAME')
+        self.STARROCKS_PASSWORD = get_env('STARROCKS_PASSWORD')
+        self.STARROCKS_DATABASE = get_env('STARROCKS_DATABASE')
+
         # ------------------------
         # Mail Configurations.
         # ------------------------
         self.MAIL_TYPE = get_env('MAIL_TYPE')
         self.MAIL_DEFAULT_SEND_FROM = get_env('MAIL_DEFAULT_SEND_FROM')
         self.RESEND_API_KEY = get_env('RESEND_API_KEY')
+        self.RESEND_API_URL = get_env('RESEND_API_URL')
 
         # ------------------------
         # Workpace Configurations.

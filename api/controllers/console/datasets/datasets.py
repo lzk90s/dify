@@ -2,25 +2,25 @@
 import flask_restful
 from flask import request, current_app
 from flask_login import current_user
-
-from controllers.console.apikey import api_key_list, api_key_fields
-from core.model_runtime.entities.model_entities import ModelType
-from core.provider_manager import ProviderManager
-from libs.login import login_required
 from flask_restful import Resource, reqparse, marshal, marshal_with
 from werkzeug.exceptions import NotFound, Forbidden
+
 import services
 from controllers.console import api
+from controllers.console.apikey import api_key_list, api_key_fields
 from controllers.console.app.error import ProviderNotInitializeError
 from controllers.console.datasets.error import DatasetNameDuplicateError
 from controllers.console.setup import setup_required
 from controllers.console.wraps import account_initialization_required
-from core.indexing_runner import IndexingRunner
 from core.errors.error import LLMBadRequestError, ProviderTokenNotInitError
+from core.indexing_runner import IndexingRunner
+from core.model_runtime.entities.model_entities import ModelType
+from core.provider_manager import ProviderManager
+from extensions.ext_database import db
 from fields.app_fields import related_app_list
 from fields.dataset_fields import dataset_detail_fields, dataset_query_detail_fields
 from fields.document_fields import document_status_fields
-from extensions.ext_database import db
+from libs.login import login_required
 from models.dataset import DocumentSegment, Document
 from models.model import UploadFile, ApiToken
 from services.dataset_service import DatasetService, DocumentService
@@ -456,7 +456,7 @@ class DatasetRetrievalSettingApi(Resource):
     @account_initialization_required
     def get(self):
         vector_type = current_app.config['VECTOR_STORE']
-        if vector_type == 'milvus':
+        if vector_type == 'milvus' or vector_type == 'starrocks':
             return {
                 'retrieval_method': [
                     'semantic_search'
@@ -478,7 +478,7 @@ class DatasetRetrievalSettingMockApi(Resource):
     @account_initialization_required
     def get(self, vector_type):
 
-        if vector_type == 'milvus':
+        if vector_type == 'milvus' or vector_type == 'starrocks':
             return {
                 'retrieval_method': [
                     'semantic_search'
@@ -505,4 +505,3 @@ api.add_resource(DatasetApiDeleteApi, '/datasets/api-keys/<uuid:api_key_id>')
 api.add_resource(DatasetApiBaseUrlApi, '/datasets/api-base-info')
 api.add_resource(DatasetRetrievalSettingApi, '/datasets/retrieval-setting')
 api.add_resource(DatasetRetrievalSettingMockApi, '/datasets/retrieval-setting/<string:vector_type>')
-

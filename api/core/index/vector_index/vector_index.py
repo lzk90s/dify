@@ -4,6 +4,7 @@ from flask import current_app
 from langchain.embeddings.base import Embeddings
 
 from core.index.vector_index.base import BaseVectorIndex
+from core.index.vector_index.starrocks_vector_index import StarRocksConfig
 from extensions.ext_database import db
 from models.dataset import Dataset, Document
 
@@ -37,6 +38,20 @@ class VectorIndex:
                     endpoint=config.get('WEAVIATE_ENDPOINT'),
                     api_key=config.get('WEAVIATE_API_KEY'),
                     batch_size=int(config.get('WEAVIATE_BATCH_SIZE'))
+                ),
+                embeddings=embeddings,
+                attributes=attributes
+            )
+        if vector_type == "starrocks":
+            from core.index.vector_index.starrocks_vector_index import StarRocksVectorIndex
+
+            return StarRocksVectorIndex(
+                dataset=dataset,
+                config=StarRocksConfig(
+                    endpoint=config.get('STARROCKS_ENDPOINT'),
+                    username=config.get('STARROCKS_USERNAME'),
+                    password=config.get('STARROCKS_PASSWORD'),
+                    database=config.get('STARROCKS_DATABASE')
                 ),
                 embeddings=embeddings,
                 attributes=attributes
@@ -87,4 +102,3 @@ class VectorIndex:
                 return method
 
         raise AttributeError(f"'VectorIndex' object has no attribute '{name}'")
-

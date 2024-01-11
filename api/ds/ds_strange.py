@@ -45,9 +45,10 @@ class Strange:
         self.dump_sk()
 
     def dump_sk(self):
-        with open(self.sk_file, 'r', encoding='utf-8') as file:
-            content = file.read()
-            print(f'sk: {content}')
+        if os.path.exists(self.sk_file):
+            with open(self.sk_file, 'r', encoding='utf-8') as file:
+                content = file.read()
+                print(f'sk: {content}')
 
     def refresh_token(self):
         url = f'{self.url}/account/verify'
@@ -89,6 +90,7 @@ class Strange:
         if r.status_code != 200:
             raise StrangeError(500, r.text)
         data = r.json()
+        print(f'StrangeResource: {json.dumps(data)}')
         if data['code'] != 200 and data['msg'] == '无权访问':
             self.refresh_token()
         res_map = data['data']
@@ -113,20 +115,20 @@ class StrangeAdapter:
             return None
 
     def init(self):
-        app_id = config.get_env('strange.app.id')
+        app_id = config.get_env('STRANGE_APP_ID')
         if not app_id:
             return
 
-        env = config.get_env('runtime.env')
+        env = config.get_env('RUNTIME_ENV')
         if not env:
-            raise ValueError('No runtime.env')
-        strange_url = config.get_env('strange.url')
+            raise ValueError('Required env RUNTIME_ENV')
+        strange_url = config.get_env('STRANGE_URL')
         if not strange_url:
-            raise ValueError('No strange.url')
-        strange_security = config.get_env('strange.app.security')
+            raise ValueError('Required env STRANGE_URL')
+        strange_security = config.get_env('STRANGE_APP_SECURITY')
         if not strange_security:
-            raise ValueError('No strange.app.security')
-        sk_file = config.get_env('sk.file')
+            raise ValueError('Required env STRANGE_APP_SECURITY')
+        sk_file = config.get_env('SK_FILE')
         if not sk_file:
             sk_file = '/home/docker/apollo/sk'
 
@@ -158,7 +160,7 @@ class StrangeAdapter:
         self.update_env('REDIS_USERNAME', user)
         self.update_env('REDIS_PASSWORD', password)
         self.update_env('REDIS_DB', db)
-        print(f'Strange: update redis config, host={host}, port={port}')
+        print(f'Strange(redis): host={host}, port={port}')
 
     def update_db_config(self, routes):
         if not routes:
@@ -183,7 +185,7 @@ class StrangeAdapter:
             'use_unicode': True,
         }
         self.update_env('DB_EXTRAS', urlencode(extras_kwargs))
-        print(f'Strange: update db config, host={host}, port={port}, db={database}')
+        print(f'Strange(db): host={host}, port={port}, db={database}')
 
 
 def init():
