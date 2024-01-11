@@ -1,10 +1,15 @@
 # coding: utf-8
 import logging
 import os.path
+import sys
 
 from flask import Flask
 
 logger = logging.getLogger(__name__)
+
+
+def is_celery_worker():
+    return 'app.celery' in sys.argv and 'worker' in sys.argv
 
 
 def init_app(app: Flask):
@@ -12,18 +17,20 @@ def init_app(app: Flask):
     if not os.path.exists(log_home):
         os.mkdir(log_home)
 
+    log_prefix = 'worker_' if is_celery_worker() else ''
+
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-    debug_handler = logging.FileHandler(os.path.join(log_home, 'debug.log'))
+    debug_handler = logging.FileHandler(os.path.join(log_home, f'{log_prefix}debug.log'))
     debug_handler.setLevel(logging.DEBUG)
 
-    info_handler = logging.FileHandler(os.path.join(log_home, 'info.log'))
+    info_handler = logging.FileHandler(os.path.join(log_home, f'{log_prefix}info.log'))
     info_handler.setLevel(logging.INFO)
 
-    warning_handler = logging.FileHandler(os.path.join(log_home, 'warning.log'))
+    warning_handler = logging.FileHandler(os.path.join(log_home, f'{log_prefix}warning.log'))
     warning_handler.setLevel(logging.WARNING)
 
-    error_handler = logging.FileHandler(os.path.join(log_home, 'error.log'))
+    error_handler = logging.FileHandler(os.path.join(log_home, f'{log_prefix}error.log'))
     error_handler.setLevel(logging.ERROR)
 
     debug_handler.setFormatter(formatter)
