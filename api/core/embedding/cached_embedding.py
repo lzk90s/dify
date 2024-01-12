@@ -2,14 +2,13 @@ import logging
 from typing import List, Optional
 
 import numpy as np
-from langchain.embeddings.base import Embeddings
-from sqlalchemy.exc import IntegrityError
-
 from core.model_manager import ModelInstance
 from core.sqltype import gen_uuid
 from extensions.ext_database import db
+from langchain.embeddings.base import Embeddings
 from libs import helper
 from models.dataset import Embedding
+from sqlalchemy.exc import IntegrityError
 
 logger = logging.getLogger(__name__)
 

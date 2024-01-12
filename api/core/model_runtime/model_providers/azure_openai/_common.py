@@ -1,9 +1,8 @@
 import openai
-from httpx import Timeout
-
-from core.model_runtime.errors.invoke import InvokeConnectionError, InvokeServerUnavailableError, InvokeRateLimitError, \
-    InvokeAuthorizationError, InvokeBadRequestError, InvokeError
+from core.model_runtime.errors.invoke import (InvokeAuthorizationError, InvokeBadRequestError, InvokeConnectionError,
+                                              InvokeError, InvokeRateLimitError, InvokeServerUnavailableError)
 from core.model_runtime.model_providers.azure_openai._constant import AZURE_OPENAI_API_VERSION
+from httpx import Timeout
 
 
 class _CommonAzureOpenAI:

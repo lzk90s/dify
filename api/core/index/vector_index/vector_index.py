@@ -1,11 +1,10 @@
 import json
 
-from flask import current_app
-from langchain.embeddings.base import Embeddings
-
 from core.index.vector_index.base import BaseVectorIndex
 from core.index.vector_index.starrocks_vector_index import StarRocksConfig
 from extensions.ext_database import db
+from flask import current_app
+from langchain.embeddings.base import Embeddings
 from models.dataset import Dataset, Document
 
 
@@ -30,7 +29,7 @@ class VectorIndex:
             raise ValueError(f"Vector store must be specified.")
 
         if vector_type == "weaviate":
-            from core.index.vector_index.weaviate_vector_index import WeaviateVectorIndex, WeaviateConfig
+            from core.index.vector_index.weaviate_vector_index import WeaviateConfig, WeaviateVectorIndex
 
             return WeaviateVectorIndex(
                 dataset=dataset,
@@ -57,7 +56,7 @@ class VectorIndex:
                 attributes=attributes
             )
         elif vector_type == "qdrant":
-            from core.index.vector_index.qdrant_vector_index import QdrantVectorIndex, QdrantConfig
+            from core.index.vector_index.qdrant_vector_index import QdrantConfig, QdrantVectorIndex
 
             return QdrantVectorIndex(
                 dataset=dataset,
@@ -70,7 +69,7 @@ class VectorIndex:
                 embeddings=embeddings
             )
         elif vector_type == "milvus":
-            from core.index.vector_index.milvus_vector_index import MilvusVectorIndex, MilvusConfig
+            from core.index.vector_index.milvus_vector_index import MilvusConfig, MilvusVectorIndex
 
             return MilvusVectorIndex(
                 dataset=dataset,

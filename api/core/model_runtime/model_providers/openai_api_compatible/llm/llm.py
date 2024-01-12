@@ -1,20 +1,19 @@
 import json
 import logging
 from decimal import Decimal
-from typing import Optional, Generator, Union, List, cast
+from typing import Generator, List, Optional, Union, cast
 from urllib.parse import urljoin
 
 import requests
-
 from core.model_runtime.entities.common_entities import I18nObject
 from core.model_runtime.entities.llm_entities import LLMMode, LLMResult, LLMResultChunk, LLMResultChunkDelta
-from core.model_runtime.entities.message_entities import ImagePromptMessageContent, PromptMessage, \
-    AssistantPromptMessage, PromptMessageContent, \
-    PromptMessageContentType, PromptMessageFunction, PromptMessageTool, UserPromptMessage, SystemPromptMessage, \
-    ToolPromptMessage
-from core.model_runtime.entities.model_entities import ModelType, PriceConfig, ParameterRule, \
-    DefaultParameterName, \
-    ParameterType, ModelPropertyKey, FetchFrom, AIModelEntity
+from core.model_runtime.entities.message_entities import (AssistantPromptMessage, ImagePromptMessageContent,
+                                                          PromptMessage, PromptMessageContent, PromptMessageContentType,
+                                                          PromptMessageFunction, PromptMessageTool, SystemPromptMessage,
+                                                          ToolPromptMessage, UserPromptMessage)
+from core.model_runtime.entities.model_entities import (AIModelEntity, DefaultParameterName, FetchFrom,
+                                                        ModelPropertyKey, ModelType, ParameterRule, ParameterType,
+                                                        PriceConfig)
 from core.model_runtime.errors.invoke import InvokeError
 from core.model_runtime.errors.validate import CredentialsValidateFailedError
 from core.model_runtime.model_providers.__base.large_language_model import LargeLanguageModel
@@ -366,6 +365,7 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                         message=AssistantPromptMessage(content=""),
                         finish_reason="Non-JSON encountered."
                     )
+                    break
 
                 if not chunk_json or len(chunk_json['choices']) == 0:
                     continue

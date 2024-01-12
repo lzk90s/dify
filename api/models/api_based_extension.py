@@ -4,6 +4,7 @@ from sqlalchemy import FetchedValue
 
 from core.sqltype import UUID, gen_uuid
 from extensions.ext_database import db
+from sqlalchemy.dialects.postgresql import UUID
 
 
 class APIBasedExtensionPoint(enum.Enum):

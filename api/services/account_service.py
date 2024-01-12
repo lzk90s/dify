@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from hashlib import sha256
 from typing import Optional, Dict, Any
 
-from flask import session, current_app
+from flask import current_app, session
 from sqlalchemy import func
 from werkzeug.exceptions import Forbidden
 

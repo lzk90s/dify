@@ -94,7 +94,7 @@ class Config:
         # ------------------------
         # General Configurations.
         # ------------------------
-        self.CURRENT_VERSION = "0.4.5"
+        self.CURRENT_VERSION = "0.4.6"
         self.PORT = get_env('PORT')
         self.COMMIT_SHA = get_env('COMMIT_SHA')
         self.EDITION = "SELF_HOSTED"

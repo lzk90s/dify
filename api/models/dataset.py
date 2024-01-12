@@ -9,6 +9,7 @@ from core.sqltype import UUID, gen_uuid
 from extensions.ext_database import db
 from models.account import Account
 from models.model import App, UploadFile
+from sqlalchemy import func
 
 
 class Dataset(db.Model):
