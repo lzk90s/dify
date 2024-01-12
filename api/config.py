@@ -6,6 +6,7 @@ import dotenv
 dotenv.load_dotenv()
 
 DEFAULTS = {
+    'PORT': '5001',
     'DB_TYPE': 'postgres',
     'DB_USERNAME': 'postgres',
     'DB_PASSWORD': '',
@@ -94,6 +95,7 @@ class Config:
         # General Configurations.
         # ------------------------
         self.CURRENT_VERSION = "0.4.5"
+        self.PORT = get_env('PORT')
         self.COMMIT_SHA = get_env('COMMIT_SHA')
         self.EDITION = "SELF_HOSTED"
         self.DEPLOY_ENV = get_env('DEPLOY_ENV')

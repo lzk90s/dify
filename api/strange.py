@@ -2,6 +2,7 @@ import json
 import os
 import re
 import time
+from typing import Any
 from urllib.parse import parse_qs, urlencode
 
 import requests
@@ -137,11 +138,15 @@ class StrangeAdapter:
         if res_dict:
             self.update_env_from_strange(res_dict)
 
-    def update_env_from_strange(self, res_dict: dict):
-        if config.get_env('REDIS_DB_ROUTE'):
-            self.update_redis_config(res_dict[config.get_env('REDIS_DB_ROUTE')])
-        if config.get_env('DB_DATABASE_ROUTE'):
-            self.update_db_config(res_dict[config.get_env('DB_DATABASE_ROUTE')])
+    def update_env_from_strange(self, routes: dict):
+        self.update_config_by_route(routes, 'REDIS_DB_ROUTE', self.update_redis_config)
+        self.update_config_by_route(routes, 'DB_DATABASE_ROUTE', self.update_db_config)
+        self.update_config_by_route(routes, 'STARROCKS_DATABASE_ROUTE', self.update_starrocks_config)
+
+    @classmethod
+    def update_config_by_route(cls, routes: dict, route_name: str, fun: Any):
+        if config.get_env(route_name):
+            fun(routes[config.get_env(route_name)])
 
     def update_redis_config(self, routes):
         if not routes:
@@ -186,6 +191,24 @@ class StrangeAdapter:
         }
         self.update_env('DB_EXTRAS', urlencode(extras_kwargs))
         print(f'Strange(db): host={host}, port={port}, db={database}')
+
+    def update_starrocks_config(self, routes):
+        if not routes:
+            raise NoRouteError()
+
+        route = routes[0]
+        address = str(route['address']).split('?')
+        extras = parse_qs(address[1])
+        host = route['host']
+        port = route['port']
+        user = route['username']
+        password = route['password']
+        database = route['databaseName']
+        self.update_env('STARROCKS_ENDPOINT', f'{host}:{port}')
+        self.update_env('STARROCKS_USERNAME', user)
+        self.update_env('STARROCKS_PASSWORD', password)
+        self.update_env('STARROCKS_DATABASE', database)
+        print(f'Strange(starrocks): host={host}, port={port}, db={database}')
 
 
 def init():

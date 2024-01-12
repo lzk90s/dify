@@ -3,6 +3,8 @@ import os
 
 from werkzeug.exceptions import Unauthorized
 
+import strange
+
 if not os.environ.get("DEBUG") or os.environ.get("DEBUG").lower() != 'true':
     from gevent import monkey
 
@@ -35,7 +37,6 @@ from config import Config, CloudEditionConfig
 from commands import register_commands
 from services.account_service import AccountService
 from libs.passport import PassportService
-from ds import ds_strange
 
 import warnings
 
@@ -69,7 +70,7 @@ config_type = os.getenv('EDITION', default='SELF_HOSTED')  # ce edition first
 def create_app(test_config=None) -> Flask:
     app = DifyApp(__name__)
 
-    initialize_ds()
+    strange.init()
 
     if test_config:
         app.config.from_object(test_config)
@@ -86,10 +87,6 @@ def create_app(test_config=None) -> Flask:
     register_commands(app)
 
     return app
-
-
-def initialize_ds():
-    ds_strange.init()
 
 
 def initialize_extensions(app):
@@ -247,4 +244,4 @@ def pool_stat():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001)
+    app.run(host='0.0.0.0', port=app.config.get('PORT'))
