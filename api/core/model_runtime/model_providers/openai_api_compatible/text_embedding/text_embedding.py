@@ -6,6 +6,7 @@ from urllib.parse import urljoin
 
 import numpy as np
 import requests
+
 from core.model_runtime.entities.common_entities import I18nObject
 from core.model_runtime.entities.model_entities import (AIModelEntity, FetchFrom, ModelPropertyKey, ModelType,
                                                         PriceConfig, PriceType)
@@ -95,7 +96,8 @@ class OAICompatEmbeddingModel(_CommonOAI_API_Compat, TextEmbeddingModel):
                 endpoint_url,
                 headers=headers,
                 data=json.dumps(payload),
-                timeout=(10, 300)
+                timeout=(10, 300),
+                verify=False
             )
             response.encoding = 'utf-8'
 
@@ -170,7 +172,8 @@ class OAICompatEmbeddingModel(_CommonOAI_API_Compat, TextEmbeddingModel):
                 url=endpoint_url,
                 headers=headers,
                 data=json.dumps(payload),
-                timeout=(10, 300)
+                timeout=(10, 300),
+                verify=False
             )
             response.encoding = 'utf-8'
 

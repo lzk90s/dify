@@ -5,6 +5,7 @@ from typing import Generator, List, Optional, Union, cast
 from urllib.parse import urljoin
 
 import requests
+
 from core.model_runtime.entities.common_entities import I18nObject
 from core.model_runtime.entities.llm_entities import LLMMode, LLMResult, LLMResultChunk, LLMResultChunkDelta
 from core.model_runtime.entities.message_entities import (AssistantPromptMessage, ImagePromptMessageContent,
@@ -122,7 +123,8 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                 endpoint_url,
                 headers=headers,
                 json=data,
-                timeout=(10, 60)
+                timeout=(10, 60),
+                verify=False
             )
             response.encoding = 'utf-8'
 
@@ -302,7 +304,8 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
             headers=headers,
             json=data,
             timeout=(10, 60),
-            stream=stream
+            stream=stream,
+            verify=False
         )
         response.encoding = 'utf-8'
 

@@ -27,7 +27,7 @@ class NoRouteError(Exception):
     pass
 
 
-class Strange:
+class StrangeClient:
     url: str = None
     app_id: str = None
     security: str = None
@@ -99,7 +99,7 @@ class Strange:
 
 
 class StrangeAdapter:
-    client: Strange = None
+    client: StrangeClient = None
 
     @classmethod
     def update_env(cls, env, value):
@@ -133,7 +133,7 @@ class StrangeAdapter:
         if not sk_file:
             sk_file = '/home/docker/apollo/sk'
 
-        self.client = Strange(strange_url.strip(), app_id.strip(), strange_security.strip(), env.strip(), sk_file)
+        self.client = StrangeClient(strange_url.strip(), app_id.strip(), strange_security.strip(), env.strip(), sk_file)
         res_dict = self.client.fetch_resource()
         if res_dict:
             self.update_env_from_strange(res_dict)

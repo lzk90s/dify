@@ -1,9 +1,12 @@
 # -*- coding:utf-8 -*-
+import base64
 import hashlib
 
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Random import get_random_bytes
+
+import config
 from extensions.ext_redis import redis_client
 from extensions.ext_storage import storage
 
@@ -44,18 +47,30 @@ def encrypt(text, public_key):
     return prefix_hybrid + encrypted_data
 
 
+def get_decrypt_decoding_from_env(tenant_id):
+    pk_env = 'PK_' + str(tenant_id).replace('-', "")
+    v = config.get_env(pk_env)
+    return base64.b64decode(v) if v else None
+
+
 def get_decrypt_decoding(tenant_id):
     filepath = "privkeys/{tenant_id}".format(tenant_id=tenant_id) + "/private.pem"
 
     cache_key = 'tenant_privkey:{hash}'.format(hash=hashlib.sha3_256(filepath.encode()).hexdigest())
     private_key = redis_client.get(cache_key)
+
+    if not private_key:
+        private_key = get_decrypt_decoding_from_env(tenant_id)
     if not private_key:
         try:
             private_key = storage.load(filepath)
         except FileNotFoundError:
             raise PrivkeyNotFoundError("Private key not found, tenant_id: {tenant_id}".format(tenant_id=tenant_id))
 
-        redis_client.setex(cache_key, 120, private_key)
+    if not private_key:
+        raise PrivkeyNotFoundError("Private key not found, tenant_id: {tenant_id}".format(tenant_id=tenant_id))
+
+    redis_client.setex(cache_key, 120, private_key)
 
     rsa_key = RSA.import_key(private_key)
     cipher_rsa = PKCS1_OAEP.new(rsa_key)
