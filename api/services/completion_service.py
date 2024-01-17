@@ -1,9 +1,12 @@
 import json
 from typing import Any, Generator, Union
 
+from sqlalchemy import and_
+
 from core.application_manager import ApplicationManager
 from core.entities.application_entities import InvokeFrom
 from core.file.message_file_parser import MessageFileParser
+from core.sqltype import invalid_uuid
 from extensions.ext_database import db
 from models.model import Account, App, AppModelConfig, Conversation, EndUser, Message
 from services.app_model_config_service import AppModelConfigService
@@ -11,7 +14,6 @@ from services.errors.app import MoreLikeThisDisabledError
 from services.errors.app_model_config import AppModelConfigBrokenError
 from services.errors.conversation import ConversationCompletedError, ConversationNotExistsError
 from services.errors.message import MessageNotExistsError
-from sqlalchemy import and_
 
 
 class CompletionService:
@@ -45,7 +47,7 @@ class CompletionService:
             if isinstance(user, Account):
                 conversation_filter.append(Conversation.from_account_id == user.id)
             else:
-                conversation_filter.append(Conversation.from_end_user_id == user.id if user else None)
+                conversation_filter.append(Conversation.from_end_user_id == user.id if user else invalid_uuid())
 
             conversation = db.session.query(Conversation).filter(and_(*conversation_filter)).first()
 
@@ -161,8 +163,8 @@ class CompletionService:
             Message.id == message_id,
             Message.app_id == app_model.id,
             Message.from_source == ('api' if isinstance(user, EndUser) else 'console'),
-            Message.from_end_user_id == (user.id if isinstance(user, EndUser) else None),
-            Message.from_account_id == (user.id if isinstance(user, Account) else None),
+            Message.from_end_user_id == (user.id if isinstance(user, EndUser) else invalid_uuid()),
+            Message.from_account_id == (user.id if isinstance(user, Account) else invalid_uuid()),
         ).first()
 
         if not message:
@@ -243,4 +245,3 @@ class CompletionService:
             filtered_inputs[variable] = value.replace('\x00', '') if value else None
 
         return filtered_inputs
-

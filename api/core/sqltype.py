@@ -72,3 +72,11 @@ def gen_uuid():
         return uuid.uuid4()
     else:
         return str(uuid.uuid4())
+
+
+def invalid_uuid():
+    as_uuid: bool = True if is_postgresql() else False
+    if as_uuid:
+        return None
+    else:
+        return ''

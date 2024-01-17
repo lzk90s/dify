@@ -12,6 +12,7 @@ from core.model_runtime.entities.model_entities import (AIModelEntity, DefaultPa
                                                         PriceConfig, PriceInfo, PriceType)
 from core.model_runtime.errors.invoke import InvokeAuthorizationError, InvokeError
 
+from core.model_runtime.model_providers.__base.tokenizers.gpt2_tokenzier import GPT2Tokenizer
 
 
 class AIModel(ABC):
@@ -53,15 +54,17 @@ class AIModel(ABC):
         :param error: model invoke error
         :return: unified error
         """
+        provider_name = self.__class__.__module__.split('.')[-3]
+
         for invoke_error, model_errors in self._invoke_error_mapping.items():
             if isinstance(error, tuple(model_errors)):
                 if invoke_error == InvokeAuthorizationError:
                     return invoke_error(
-                        description="Incorrect model credentials provided, please check and try again. ")
+                        description=f"[{provider_name}] Incorrect model credentials provided, please check and try again. ")
 
-                return invoke_error(description=f"{invoke_error.description}: {str(error)}")
+                return invoke_error(description=f"[{provider_name}] {invoke_error.description}, {str(error)}")
 
-        return InvokeError(description=f"Error: {str(error)}")
+        return InvokeError(description=f"[{provider_name}] Error: {str(error)}")
 
     def get_price(self, model: str, credentials: dict, price_type: PriceType, tokens: int) -> PriceInfo:
         """

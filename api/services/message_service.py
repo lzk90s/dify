@@ -5,6 +5,7 @@ from core.generator.llm_generator import LLMGenerator
 from core.memory.token_buffer_memory import TokenBufferMemory
 from core.model_manager import ModelManager
 from core.model_runtime.entities.model_entities import ModelType
+from core.sqltype import invalid_uuid
 from extensions.ext_database import db
 from libs.infinite_scroll_pagination import InfiniteScrollPagination
 from models.account import Account
@@ -147,8 +148,8 @@ class MessageService:
                 message_id=message.id,
                 rating=rating,
                 from_source=('user' if isinstance(user, EndUser) else 'admin'),
-                from_end_user_id=(user.id if isinstance(user, EndUser) else None),
-                from_account_id=(user.id if isinstance(user, Account) else None),
+                from_end_user_id=(user.id if isinstance(user, EndUser) else invalid_uuid()),
+                from_account_id=(user.id if isinstance(user, Account) else invalid_uuid()),
             )
             db.session.add(feedback)
 
@@ -162,8 +163,8 @@ class MessageService:
             Message.id == message_id,
             Message.app_id == app_model.id,
             Message.from_source == ('api' if isinstance(user, EndUser) else 'console'),
-            Message.from_end_user_id == (user.id if isinstance(user, EndUser) else None),
-            Message.from_account_id == (user.id if isinstance(user, Account) else None),
+            Message.from_end_user_id == (user.id if isinstance(user, EndUser) else invalid_uuid()),
+            Message.from_account_id == (user.id if isinstance(user, Account) else invalid_uuid()),
         ).first()
 
         if not message:

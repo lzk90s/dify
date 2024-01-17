@@ -1,6 +1,7 @@
 from typing import Optional, Union
 
 from core.generator.llm_generator import LLMGenerator
+from core.sqltype import invalid_uuid
 from extensions.ext_database import db
 from libs.infinite_scroll_pagination import InfiniteScrollPagination
 from models.account import Account
@@ -22,8 +23,8 @@ class ConversationService:
             Conversation.is_deleted == False,
             Conversation.app_id == app_model.id,
             Conversation.from_source == ('api' if isinstance(user, EndUser) else 'console'),
-            Conversation.from_end_user_id == (user.id if isinstance(user, EndUser) else None),
-            Conversation.from_account_id == (user.id if isinstance(user, Account) else None),
+            Conversation.from_end_user_id == (user.id if isinstance(user, EndUser) else invalid_uuid()),
+            Conversation.from_account_id == (user.id if isinstance(user, Account) else invalid_uuid()),
         )
 
         if include_ids is not None:
@@ -85,9 +86,9 @@ class ConversationService:
         # get conversation first message
         message = db.session.query(Message) \
             .filter(
-                Message.app_id == app_model.id,
-                Message.conversation_id == conversation.id
-            ).order_by(Message.created_at.asc()).first()
+            Message.app_id == app_model.id,
+            Message.conversation_id == conversation.id
+        ).order_by(Message.created_at.asc()).first()
 
         if not message:
             raise MessageNotExistsError()
@@ -110,8 +111,8 @@ class ConversationService:
             Conversation.id == conversation_id,
             Conversation.app_id == app_model.id,
             Conversation.from_source == ('api' if isinstance(user, EndUser) else 'console'),
-            Conversation.from_end_user_id == (user.id if isinstance(user, EndUser) else None),
-            Conversation.from_account_id == (user.id if isinstance(user, Account) else None),
+            Conversation.from_end_user_id == (user.id if isinstance(user, EndUser) else invalid_uuid()),
+            Conversation.from_account_id == (user.id if isinstance(user, Account) else invalid_uuid()),
             Conversation.is_deleted == False
         ).first()
 

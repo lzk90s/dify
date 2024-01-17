@@ -1,7 +1,5 @@
 import json
 
-from core.file.upload_file_parser import UploadFileParser
-from extensions.ext_database import db
 from flask import current_app, request
 from flask_login import UserMixin
 from sqlalchemy import Float, FetchedValue
@@ -481,11 +479,11 @@ class Message(db.Model):
         db.Index('message_account_idx', 'app_id', 'from_source', 'from_account_id'),
     )
 
-    id = db.Column(UUID, default=gen_uuid, server_default=FetchedValue())
-    app_id = db.Column(UUID, default=gen_uuid, nullable=False)
+    id = db.Column(UUID, default=gen_uuid)
+    app_id = db.Column(UUID, nullable=False)
     model_provider = db.Column(db.String(255), nullable=False)
     model_id = db.Column(db.String(255), nullable=False)
-    override_model_configs = db.Column(db.Text)
+    override_model_configs = db.Column(db.Text, server_default=FetchedValue())
     conversation_id = db.Column(UUID, db.ForeignKey('conversations.id'), nullable=False)
     inputs = db.Column(db.JSON)
     query = db.Column(db.Text, nullable=False)
@@ -773,8 +771,8 @@ class EndUser(UserMixin, db.Model):
     tenant_id = db.Column(UUID, default=gen_uuid, nullable=False)
     app_id = db.Column(UUID, default=gen_uuid, nullable=True)
     type = db.Column(db.String(255), nullable=False)
-    external_user_id = db.Column(db.String(255), nullable=True)
-    name = db.Column(db.String(255))
+    external_user_id = db.Column(db.String(255), nullable=True, server_default=FetchedValue())
+    name = db.Column(db.String(255), server_default=FetchedValue())
     is_anonymous = db.Column(db.Boolean, nullable=False, server_default=FetchedValue())
     session_id = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
