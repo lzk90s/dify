@@ -63,8 +63,6 @@ DEFAULTS = {
     'BILLING_ENABLED': 'False',
     'CAN_REPLACE_LOGO': 'False',
     'ETL_TYPE': 'dify',
-    'APOLLO_APP_ID': 'dify',
-    'APOLLO_LOCATOR_URL': ''
 }
 
 
@@ -94,7 +92,7 @@ class Config:
         # ------------------------
         # General Configurations.
         # ------------------------
-        self.CURRENT_VERSION = "0.4.6"
+        self.CURRENT_VERSION = "0.4.7"
         self.PORT = get_env('PORT')
         self.COMMIT_SHA = get_env('COMMIT_SHA')
         self.EDITION = "SELF_HOSTED"
@@ -148,12 +146,6 @@ class Config:
 
         # check update url
         self.CHECK_UPDATE_URL = get_env('CHECK_UPDATE_URL')
-
-        # ------------------------
-        # Apollo and Strange Configurations
-        # ------------------------
-        self.APOLLO_APP_ID = get_env('APOLLO_APP_ID')
-        self.APOLLO_LOCATOR_URL = get_env('APOLLO_LOCATOR_URL')
 
         # ------------------------
         # Database Configurations.
