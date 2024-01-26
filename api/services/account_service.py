@@ -10,6 +10,7 @@ from flask import current_app, session
 from sqlalchemy import func
 from werkzeug.exceptions import Forbidden
 
+from constants.languages import languages, language_timezone_mapping
 from events.tenant_event import tenant_was_created
 from extensions.ext_redis import redis_client
 from libs.helper import get_remote_ip
@@ -136,7 +137,7 @@ class AccountService:
 
     @staticmethod
     def create_account(email: str, name: str, password: str = None,
-                       interface_language: str = 'en-US', interface_theme: str = 'light',
+                       interface_language: str = languages[0], interface_theme: str = 'light',
                        timezone: str = 'America/New_York', ) -> Account:
         """create account"""
         account = Account()
@@ -157,11 +158,9 @@ class AccountService:
 
         account.interface_language = interface_language
         account.interface_theme = interface_theme
-
-        if interface_language == 'zh-Hans':
-            account.timezone = 'Asia/Shanghai'
-        else:
-            account.timezone = timezone
+        
+        # Set timezone based on language
+        account.timezone = language_timezone_mapping.get(interface_language, 'UTC') 
 
         db.session.add(account)
         db.session.commit()
@@ -462,16 +461,21 @@ class RegisterService:
             account = AccountService.create_account(email, name)
             account.status = AccountStatus.PENDING.value
             db.session.commit()
+
+            TenantService.create_tenant_member(tenant, account, role)
         else:
             TenantService.check_member_permission(tenant, inviter, account, 'add')
             ta = TenantAccountJoin.query.filter_by(
                 tenant_id=tenant.id,
                 account_id=account.id
             ).first()
-            if ta:
-                raise AccountAlreadyInTenantError("Account already in tenant.")
 
-        TenantService.create_tenant_member(tenant, account, role)
+            if not ta:
+                TenantService.create_tenant_member(tenant, account, role)
+
+            # Support resend invitation email when the account is pending status
+            if account.status != AccountStatus.PENDING.value:
+                raise AccountAlreadyInTenantError("Account already in tenant.")
 
         token = cls.generate_invite_token(tenant, account)
 

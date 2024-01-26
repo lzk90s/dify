@@ -1,6 +1,7 @@
 import base64
+import copy
 import time
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import numpy as np
 import tiktoken
@@ -78,7 +79,7 @@ class AzureOpenAITextEmbeddingModel(_CommonAzureOpenAI, TextEmbeddingModel):
                 embeddings_batch, embedding_used_tokens = self._embedding_invoke(
                     model=model,
                     client=client,
-                    texts=[""],
+                    texts="",
                     extra_model_kwargs=extra_model_kwargs
                 )
 
@@ -149,7 +150,7 @@ class AzureOpenAITextEmbeddingModel(_CommonAzureOpenAI, TextEmbeddingModel):
         return ai_model_entity.entity
 
     @staticmethod
-    def _embedding_invoke(model: str, client: AzureOpenAI, texts: list[str],
+    def _embedding_invoke(model: str, client: AzureOpenAI, texts: Union[list[str], str],
                           extra_model_kwargs: dict) -> Tuple[list[list[float]], int]:
         response = client.embeddings.create(
             input=texts,
@@ -189,9 +190,10 @@ class AzureOpenAITextEmbeddingModel(_CommonAzureOpenAI, TextEmbeddingModel):
     def _get_ai_model_entity(base_model_name: str, model: str) -> AzureBaseModel:
         for ai_model_entity in EMBEDDING_BASE_MODELS:
             if ai_model_entity.base_model_name == base_model_name:
-                ai_model_entity.entity.model = model
-                ai_model_entity.entity.label.en_US = model
-                ai_model_entity.entity.label.zh_Hans = model
-                return ai_model_entity
+                ai_model_entity_copy = copy.deepcopy(ai_model_entity)
+                ai_model_entity_copy.entity.model = model
+                ai_model_entity_copy.entity.label.en_US = model
+                ai_model_entity_copy.entity.label.zh_Hans = model
+                return ai_model_entity_copy
 
         return None

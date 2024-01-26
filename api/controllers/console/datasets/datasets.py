@@ -20,8 +20,8 @@ from flask_login import current_user
 from flask_restful import Resource, marshal, marshal_with, reqparse
 
 from libs.login import login_required
-from models.dataset import DocumentSegment, Document
-from models.model import UploadFile, ApiToken
+from models.dataset import Dataset, Document, DocumentSegment
+from models.model import ApiToken, UploadFile
 from services.dataset_service import DatasetService, DocumentService
 from werkzeug.exceptions import Forbidden, NotFound
 
@@ -98,7 +98,8 @@ class DatasetListApi(Resource):
                             help='type is required. Name must be between 1 to 40 characters.',
                             type=_validate_name)
         parser.add_argument('indexing_technique', type=str, location='json',
-                            choices=('high_quality', 'economy'),
+                            choices=Dataset.INDEXING_TECHNIQUE_LIST,
+                            nullable=True,
                             help='Invalid indexing technique.')
         args = parser.parse_args()
 
@@ -178,8 +179,9 @@ class DatasetApi(Resource):
                             location='json', store_missing=False,
                             type=_validate_description_length)
         parser.add_argument('indexing_technique', type=str, location='json',
-                            choices=('high_quality', 'economy'),
-                            help='Invalid indexing technique.')
+                    choices=Dataset.INDEXING_TECHNIQUE_LIST,
+                    nullable=True,
+                    help='Invalid indexing technique.')
         parser.add_argument('permission', type=str, location='json', choices=(
             'only_me', 'all_team_members'), help='Invalid permission.')
         parser.add_argument('retrieval_model', type=dict, location='json', help='Invalid retrieval model.')
@@ -257,7 +259,9 @@ class DatasetIndexingEstimateApi(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('info_list', type=dict, required=True, nullable=True, location='json')
         parser.add_argument('process_rule', type=dict, required=True, nullable=True, location='json')
-        parser.add_argument('indexing_technique', type=str, required=True, nullable=True, location='json')
+        parser.add_argument('indexing_technique', type=str, required=True,
+                            choices=Dataset.INDEXING_TECHNIQUE_LIST,
+                            nullable=True, location='json')
         parser.add_argument('doc_form', type=str, default='text_model', required=False, nullable=False, location='json')
         parser.add_argument('dataset_id', type=str, required=False, nullable=False, location='json')
         parser.add_argument('doc_language', type=str, default='English', required=False, nullable=False,
