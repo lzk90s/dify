@@ -21,18 +21,18 @@ def upgrade():
     with op.batch_alter_table('message_agent_thoughts', schema=None) as batch_op:
         batch_op.add_column(
             sa.Column('message_price_unit', sa.Numeric(precision=10, scale=7), server_default=sa.text('0.001'),
-                      nullable=False))
+                      nullable=False, comment='消息价格单位'))
         batch_op.add_column(
             sa.Column('answer_price_unit', sa.Numeric(precision=10, scale=7), server_default=sa.text('0.001'),
-                      nullable=False))
+                      nullable=False, comment='回答价格单位'))
 
     with op.batch_alter_table('messages', schema=None) as batch_op:
         batch_op.add_column(
             sa.Column('message_price_unit', sa.Numeric(precision=10, scale=7), server_default=sa.text('0.001'),
-                      nullable=False))
+                      nullable=False, comment='消息单价'))
         batch_op.add_column(
             sa.Column('answer_price_unit', sa.Numeric(precision=10, scale=7), server_default=sa.text('0.001'),
-                      nullable=False))
+                      nullable=False, comment='回答单价'))
 
     # ### end Alembic commands ###
 

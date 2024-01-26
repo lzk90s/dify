@@ -20,9 +20,9 @@ def upgrade():
     with op.batch_alter_table('datasets', schema=None) as batch_op:
         batch_op.add_column(sa.Column('embedding_model', sa.String(length=255),
                                       server_default=sa.text("'text-embedding-ada-002'"),
-                                      nullable=False))
+                                      nullable=False, comment='模型'))
         batch_op.add_column(sa.Column('embedding_model_provider', sa.String(length=255),
-                                      server_default=sa.text("'openai'"), nullable=False))
+                                      server_default=sa.text("'openai'"), nullable=False, comment='提供方'))
 
     # ### end Alembic commands ###
 

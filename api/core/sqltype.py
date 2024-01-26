@@ -80,3 +80,19 @@ def invalid_uuid():
         return None
     else:
         return ''
+
+
+def invalid_time():
+    as_uuid: bool = True if is_postgresql() else False
+    if as_uuid:
+        return None
+    else:
+        return sqlalchemy.text("'1970-01-01 00:00:00'")
+
+
+# def empty_uuid():
+#     return sqlalchemy.text("''")
+
+
+def empty_text():
+    return sqlalchemy.text("''")

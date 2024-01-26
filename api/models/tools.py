@@ -1,17 +1,15 @@
 import json
-from enum import Enum
 from typing import List
 
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, FetchedValue
 
-from extensions.ext_database import db
-
-from core.tools.entities.tool_bundle import ApiBasedToolBundle
+from core.sqltype import UUID, gen_uuid
 from core.tools.entities.common_entities import I18nObject
-from core.tools.entities.tool_entities import ApiProviderSchemaType, ToolRuntimeVariablePool
-
+from core.tools.entities.tool_bundle import ApiBasedToolBundle
+from core.tools.entities.tool_entities import ApiProviderSchemaType
+from extensions.ext_database import db
 from models.model import Tenant, Account, App
+
 
 class BuiltinToolProvider(db.Model):
     """
@@ -25,7 +23,7 @@ class BuiltinToolProvider(db.Model):
     )
 
     # id of the tool provider
-    id = db.Column(UUID, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid)
     # id of the tenant
     tenant_id = db.Column(UUID, nullable=True)
     # who created this tool provider
@@ -33,13 +31,14 @@ class BuiltinToolProvider(db.Model):
     # name of the tool provider
     provider = db.Column(db.String(40), nullable=False)
     # credential of the tool provider
-    encrypted_credentials = db.Column(db.Text, nullable=True)
+    encrypted_credentials = db.Column(db.Text, nullable=True, server_default=FetchedValue())
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
     updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
 
     @property
     def credentials(self) -> dict:
         return json.loads(self.encrypted_credentials)
+
 
 class PublishedAppTool(db.Model):
     """
@@ -52,7 +51,7 @@ class PublishedAppTool(db.Model):
     )
 
     # id of the tool provider
-    id = db.Column(UUID, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid)
     # id of the app
     app_id = db.Column(UUID, ForeignKey('apps.id'), nullable=False)
     # who published this tool
@@ -75,10 +74,11 @@ class PublishedAppTool(db.Model):
     @property
     def description_i18n(self) -> I18nObject:
         return I18nObject(**json.loads(self.description))
-    
+
     @property
     def app(self) -> App:
         return db.session.query(App).filter(App.id == self.app_id).first()
+
 
 class ApiToolProvider(db.Model):
     """
@@ -90,7 +90,7 @@ class ApiToolProvider(db.Model):
         db.UniqueConstraint('name', 'tenant_id', name='unique_api_tool_provider')
     )
 
-    id = db.Column(UUID, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid)
     # name of the api provider
     name = db.Column(db.String(40), nullable=False)
     # icon
@@ -109,7 +109,7 @@ class ApiToolProvider(db.Model):
     # json format credentials
     credentials_str = db.Column(db.Text, nullable=False)
     # privacy policy
-    privacy_policy = db.Column(db.String(255), nullable=True)
+    privacy_policy = db.Column(db.String(255), nullable=True, server_default=FetchedValue())
 
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
     updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
@@ -117,19 +117,19 @@ class ApiToolProvider(db.Model):
     @property
     def schema_type(self) -> ApiProviderSchemaType:
         return ApiProviderSchemaType.value_of(self.schema_type_str)
-    
+
     @property
     def tools(self) -> List[ApiBasedToolBundle]:
         return [ApiBasedToolBundle(**tool) for tool in json.loads(self.tools_str)]
-    
+
     @property
     def credentials(self) -> dict:
         return json.loads(self.credentials_str)
-    
+
     @property
     def is_taned(self) -> bool:
         return self.tenant_id is not None
-    
+
     @property
     def user(self) -> Account:
         return db.session.query(Account).filter(Account.id == self.user_id).first()
@@ -137,7 +137,8 @@ class ApiToolProvider(db.Model):
     @property
     def tanent(self) -> Tenant:
         return db.session.query(Tenant).filter(Tenant.id == self.tenant_id).first()
-    
+
+
 class ToolModelInvoke(db.Model):
     """
     store the invoke logs from tool invoke
@@ -147,7 +148,7 @@ class ToolModelInvoke(db.Model):
         db.PrimaryKeyConstraint('id', name='tool_model_invoke_pkey'),
     )
 
-    id = db.Column(UUID, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid)
     # who invoke this tool
     user_id = db.Column(UUID, nullable=False)
     # tanent id
@@ -175,6 +176,7 @@ class ToolModelInvoke(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
     updated_at = db.Column(db.DateTime, nullable=False, server_default=db.text('CURRENT_TIMESTAMP(0)'))
 
+
 class ToolConversationVariables(db.Model):
     """
     store the conversation variables from tool invoke
@@ -187,7 +189,7 @@ class ToolConversationVariables(db.Model):
         db.Index('conversation_id_idx', 'conversation_id'),
     )
 
-    id = db.Column(UUID, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid)
     # conversation user id
     user_id = db.Column(UUID, nullable=False)
     # tanent id
@@ -203,7 +205,8 @@ class ToolConversationVariables(db.Model):
     @property
     def variables(self) -> dict:
         return json.loads(self.variables_str)
-    
+
+
 class ToolFile(db.Model):
     """
     store the file created by agent
@@ -215,7 +218,7 @@ class ToolFile(db.Model):
         db.Index('tool_file_conversation_id_idx', 'conversation_id'),
     )
 
-    id = db.Column(UUID, server_default=db.text('uuid_generate_v4()'))
+    id = db.Column(UUID, default=gen_uuid)
     # conversation user id
     user_id = db.Column(UUID, nullable=False)
     # tanent id
@@ -227,4 +230,4 @@ class ToolFile(db.Model):
     # mime type
     mimetype = db.Column(db.String(255), nullable=False)
     # original url
-    original_url = db.Column(db.String(255), nullable=True)
+    original_url = db.Column(db.String(255), nullable=True, server_default=FetchedValue())
