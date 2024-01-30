@@ -1,7 +1,7 @@
 # coding: utf-8
-from typing import Union
+from typing import Union, Optional
 
-from tools.api_client import ToolApiClient
+from vendor.extdata.api_client import ToolApiClient
 
 
 class DeviceNotExistError(Exception):
@@ -11,14 +11,14 @@ class DeviceNotExistError(Exception):
         self.dev_id = dev_id
 
 
-class DeviceInstance:
+class Device:
     dev_id: str = None
     product_id: str = None
     name: str = None
 
     client: ToolApiClient = None
 
-    def __init__(self, dev_id, client: ToolApiClient):
+    def __init__(self, dev_id, client: Optional[ToolApiClient]):
         self.dev_id = dev_id
         self.client = client
         self.info()
@@ -72,13 +72,30 @@ class DeviceInstance:
         return data['result']
 
 
+class MockDevice(Device):
+
+    def info(self):
+        self.product_id = 'mock_pid'
+
+    def diagnose(self, fn_type, *args, **kwargs) -> str or None:
+        if fn_type == 'CHECK_OTA_UPGRADE':
+            return '设备已经是最新版本'
+        elif fn_type == 'OTA_FAIL' or fn_type == 'OTA_TIMEOUT':
+            return 'failed to malloc memory'
+        else:
+            return None
+
+
 class DeviceFactory:
     client = ToolApiClient()
 
     @classmethod
-    def find_dev_by_id(cls, dev_id: str) -> Union[DeviceInstance, None]:
+    def find_dev_by_id(cls, dev_id: str) -> Union[Device, None]:
+        if 'mock' == dev_id:
+            return MockDevice(dev_id, None)
+
         try:
-            return DeviceInstance(dev_id, cls.client)
+            return Device(dev_id, cls.client)
         except DeviceNotExistError:
             return None
 

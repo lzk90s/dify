@@ -25,7 +25,7 @@ def upgrade():
                     sa.Column('tenant_id', UUID(), nullable=False, comment='租户ID'),
                     sa.Column('name', sa.String(length=255), nullable=False, comment='名字'),
                     sa.Column('api_endpoint', sa.String(length=255), nullable=False, comment='api端点'),
-                    sa.Column('api_key', sa.String(length=255), nullable=False, comment='api key'),
+                    sa.Column('api_key', sa.String(length=2048), nullable=False, comment='api key'),
                     sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP(0)'),
                               nullable=False, comment='创建时间'),
                     sa.PrimaryKeyConstraint('id', name='api_based_extension_pkey')

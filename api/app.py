@@ -33,7 +33,6 @@ from flask import Flask, Response, request
 from flask_cors import CORS
 from libs.passport import PassportService
 # DO NOT REMOVE BELOW
-from models import account, dataset, model, source, task, tool, web, tools
 from services.account_service import AccountService
 
 # DO NOT REMOVE ABOVE
@@ -141,7 +140,7 @@ def unauthorized_handler():
 
 
 def register_tools(app):
-    from tools import bp as tools_bp
+    from vendor.extdata import bp as tools_bp
     CORS(tools_bp,
          allow_headers=['Content-Type'],
          methods=['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'PATCH']

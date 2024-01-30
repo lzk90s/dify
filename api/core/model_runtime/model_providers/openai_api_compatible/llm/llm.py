@@ -135,7 +135,8 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
             try:
                 json_result = response.json()
                 if json_result['errorCode']:
-                    raise CredentialsValidateFailedError(f'Credentials validation failed: http error')
+                    raise CredentialsValidateFailedError(
+                        f'Credentials validation failed: http error {json_result["errorMessage"]}')
                 json_result = json_result['data']
             except json.JSONDecodeError as e:
                 raise CredentialsValidateFailedError(f'Credentials validation failed: JSON decode error')
@@ -442,7 +443,12 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
     def _handle_generate_response(self, model: str, credentials: dict, response: requests.Response,
                                   prompt_messages: list[PromptMessage]) -> LLMResult:
 
-        response_json = response.json()
+        raw_response = response.json()
+        if 'errorCode' in raw_response and raw_response['errorCode'] and raw_response['errorCode'] != '200':
+            raise InvokeError(
+                f"API request failed with status code {raw_response['errorCode']}: {raw_response['errorMessage']}")
+
+        response_json = raw_response['data'] if 'data' in raw_response else raw_response
 
         completion_type = LLMMode.value_of(credentials['mode'])
 
@@ -466,8 +472,8 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
         usage = response_json.get("usage")
         if usage:
             # transform usage
-            prompt_tokens = usage["prompt_tokens"]
-            completion_tokens = usage["completion_tokens"]
+            prompt_tokens = int(usage["prompt_tokens"])
+            completion_tokens = int(usage["completion_tokens"])
         else:
             # calculate num tokens
             prompt_tokens = self._num_tokens_from_string(model, prompt_messages[0].content)

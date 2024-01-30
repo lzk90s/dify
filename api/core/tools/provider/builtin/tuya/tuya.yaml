@@ -1,0 +1,13 @@
+identity:
+  author: Dify
+  name: tuya
+  label:
+    en_US: DeviceDiagnose
+    zh_Hans: 设备诊断
+    pt_BR: DeviceDiagnose
+  description:
+    en_US: It can diagnose problems such as device firmware upgrade, OTA, upgrade not detected, upgrade failure, upgrade timeout and other issues.
+    zh_Hans: 可以对设备固件升级、OTA、检测不到升级、升级失败、升级超时等问题进行诊断。
+    pt_BR: It can diagnose problems such as device firmware upgrade, OTA, upgrade not detected, upgrade failure, upgrade timeout and other issues.
+  icon: icon.svg
+credentials_for_provider:

@@ -6,4 +6,4 @@ from libs.external_api import ExternalApi
 bp = Blueprint('tools', __name__, url_prefix='/tools/api')
 api = ExternalApi(bp)
 
-from . import diagnose_tool
+from vendor.extdata import diagnose_tool

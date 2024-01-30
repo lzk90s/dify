@@ -6,9 +6,9 @@ import jieba
 from flask_restful import Resource, reqparse
 from scipy import spatial
 
-from tools import api
-from tools.const import EMBEDDING_TEMPLATES
-from tools.dev import DeviceFactory
+from vendor.extdata import api
+from vendor.extdata.const import EMBEDDING_TEMPLATES
+from vendor.extdata.dev import DeviceFactory
 
 log = logging.getLogger(__name__)
 
@@ -68,6 +68,8 @@ class DiagnoseToolApi(Resource):
         if not dev_id:
             dev_id = self.parse_dev_id_from_query(query)
             log.info(f'parsed dev {dev_id} from query {query}')
+            if not dev_id:
+                dev_id = 'mock'
 
         if not dev_id:
             return {

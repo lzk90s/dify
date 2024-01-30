@@ -1,0 +1,28 @@
+identity:
+  name: ota_check_diagnose
+  author: Dify
+  label:
+    en_US: OTA check diagnose
+    zh_Hans: OTA检测升级诊断
+    pt_BR: OTA check diagnose
+  icon: icon.svg
+description:
+  human:
+    en_US: A tool for diagnose firmware upgrade(OTA) problems such as no ota upgrade, check upgrade.
+    zh_Hans: 一个用于诊断设备检测不到升级，无升级，不提示升级问题的工具。
+    pt_BR: A tool for diagnose firmware upgrade(OTA) problems such as no ota upgrade, check upgrade.
+  llm: 一个用于诊断设备检测不到升级，无升级，不提示升级问题的工具。
+parameters:
+  - name: dev
+    type: string
+    required: true
+    label:
+      en_US: Device
+      zh_Hans: 设备
+      pt_BR: Device
+    human_description:
+      en_US: Device for diagnose
+      zh_Hans: 需要诊断的设备ID
+      pt_BR: Device for diagnose
+    llm_description: device for diagnose
+    form: llm

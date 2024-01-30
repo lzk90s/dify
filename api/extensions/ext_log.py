@@ -20,7 +20,8 @@ def init_app(app: Flask):
     log_prefix = 'worker_' if is_celery_worker() else ''
 
     date_format = '%Y-%m-%d %H:%M:%S'
-    formatter = logging.Formatter('%(asctime)s.%(msecs)03d - %(levelname)s - %(message)s', date_format)
+    formatter = logging.Formatter(
+        '%(asctime)s.%(msecs)03d - %(levelname)s - [%(filename)s %(funcName)s %(lineno)s] - %(message)s', date_format)
 
     debug_handler = logging.FileHandler(os.path.join(log_home, f'{log_prefix}debug.log'))
     debug_handler.setLevel(logging.DEBUG)
