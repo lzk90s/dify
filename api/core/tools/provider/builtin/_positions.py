@@ -14,7 +14,9 @@ position = {
     'stablediffusion': 9,
     'vectorizer': 10,
     'youtube': 11,
-    'tuya': 12,
+    'github': 12,
+    'gaode': 13,
+    'tuya': 14,
 }
 
 

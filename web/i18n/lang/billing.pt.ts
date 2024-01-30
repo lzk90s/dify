@@ -20,7 +20,7 @@ const translation = {
     save: 'Save ',
     free: 'Free',
     currentPlan: 'Current Plan',
-    contractOwner: 'Contact your workspace owner',
+    contractOwner: 'Contact team manager',
     startForFree: 'Start for free',
     getStartedWith: 'Get started with ',
     contactSales: 'Contact Sales',
@@ -59,15 +59,15 @@ const translation = {
     member: 'Member',
     memberAfter: 'Member',
     messageRequest: {
-      title: 'Message Requests',
-      unit: 'per day',
-      tooltip: 'Includes all messages from your apps, whether via APIs or web sessions. (Not LLM resource usage)',
+      title: 'Message Credits',
+      tooltip: 'Message invocation quotas for various plans using OpenAI models (except gpt4).Messages over the limit will use your OpenAI API Key.',
     },
     annotatedResponse: {
       title: 'Annotation Quota Limits',
       tooltip: 'Manual editing and annotation of responses provides customizable high-quality question-answering abilities for apps. (Applicable only in chat apps)',
     },
     ragAPIRequestTooltip: 'Refers to the number of API calls invoking only the knowledge base processing capabilities of Dify.',
+    receiptInfo: 'Somente proprietários e administradores de equipe podem se inscrever e visualizar informações de cobrança',
   },
   plans: {
     sandbox: {

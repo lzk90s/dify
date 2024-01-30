@@ -13,7 +13,10 @@ import Button from '../../base/button'
 import Loading from '../../base/loading'
 import useAdvancedPromptConfig from './hooks/use-advanced-prompt-config'
 import EditHistoryModal from './config-prompt/conversation-histroy/edit-modal'
-import { useDebugWithSingleOrMultipleModel } from './debug/hooks'
+import {
+  useDebugWithSingleOrMultipleModel,
+  useFormattingChangedDispatcher,
+} from './debug/hooks'
 import type { ModelAndParameter } from './debug/types'
 import { APP_SIDEBAR_SHOULD_COLLAPSE } from './debug/types'
 import PublishWithMultipleModel from './debug/debug-with-multiple-model/publish-with-multiple-model'
@@ -45,7 +48,6 @@ import { AgentStrategy, AppType, ModelModeType, RETRIEVE_TYPE, Resolution, Trans
 import { PromptMode } from '@/models/debug'
 import { ANNOTATION_DEFAULT, DEFAULT_AGENT_SETTING, DEFAULT_CHAT_PROMPT_CONFIG, DEFAULT_COMPLETION_PROMPT_CONFIG, supportFunctionCallModels } from '@/config'
 import SelectDataSet from '@/app/components/app/configuration/dataset-config/select-dataset'
-import I18n from '@/context/i18n'
 import { useModalContext } from '@/context/modal-context'
 import useBreakpoints, { MediaType } from '@/hooks/use-breakpoints'
 import Drawer from '@/app/components/base/drawer'
@@ -111,10 +113,11 @@ const Configuration: FC = () => {
       embedding_model_name: '',
     },
   })
+  const formattingChangedDispatcher = useFormattingChangedDispatcher()
   const setAnnotationConfig = (config: AnnotationReplyConfig, notSetFormatChanged?: boolean) => {
     doSetAnnotationConfig(config)
     if (!notSetFormatChanged)
-      setFormattingChanged(true)
+      formattingChangedDispatcher()
   }
 
   const [moderationConfig, setModerationConfig] = useState<ModerationConfig>({
@@ -203,7 +206,7 @@ const Configuration: FC = () => {
       return
     }
 
-    setFormattingChanged(true)
+    formattingChangedDispatcher()
     if (data.find(item => !item.name)) { // has not loaded selected dataset
       const newSelected = produce(data, (draft: any) => {
         data.forEach((item, index) => {
@@ -284,6 +287,23 @@ const Configuration: FC = () => {
 
     doSetPromptMode(mode)
   }
+  const [visionConfig, doSetVisionConfig] = useState({
+    enabled: false,
+    number_limits: 2,
+    detail: Resolution.low,
+    transfer_methods: [TransferMethod.local_file],
+  })
+
+  const handleSetVisionConfig = (config: VisionSettings, notNoticeFormattingChanged?: boolean) => {
+    doSetVisionConfig({
+      enabled: config.enabled || false,
+      number_limits: config.number_limits || 2,
+      detail: config.detail || Resolution.low,
+      transfer_methods: config.transfer_methods || [TransferMethod.local_file],
+    })
+    if (!notNoticeFormattingChanged)
+      formattingChangedDispatcher()
+  }
 
   const {
     chatPromptConfig,
@@ -309,7 +329,6 @@ const Configuration: FC = () => {
     setCompletionParams,
     setStop: setTempStop,
   })
-
   const setModel = async ({
     modelId,
     provider,
@@ -342,9 +361,8 @@ const Configuration: FC = () => {
 
     setModelConfig(newModelConfig)
     const supportVision = features && features.includes(ModelFeatureEnum.vision)
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    setVisionConfig({
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+
+    handleSetVisionConfig({
       ...visionConfig,
       enabled: supportVision,
     }, true)
@@ -352,18 +370,6 @@ const Configuration: FC = () => {
   }
 
   const isShowVisionConfig = !!currModel?.features?.includes(ModelFeatureEnum.vision)
-  const [visionConfig, doSetVisionConfig] = useState({
-    enabled: false,
-    number_limits: 2,
-    detail: Resolution.low,
-    transfer_methods: [TransferMethod.local_file],
-  })
-
-  const setVisionConfig = (config: VisionSettings, notNoticeFormattingChanged?: boolean) => {
-    doSetVisionConfig(config)
-    if (!notNoticeFormattingChanged)
-      setFormattingChanged(true)
-  }
 
   useEffect(() => {
     (async () => {
@@ -484,7 +490,7 @@ const Configuration: FC = () => {
         }
 
         if (modelConfig.file_upload)
-          setVisionConfig(modelConfig.file_upload.image, true)
+          handleSetVisionConfig(modelConfig.file_upload.image, true)
 
         syncToPublishedConfig(config)
         setPublishedConfig(config)
@@ -631,7 +637,6 @@ const Configuration: FC = () => {
   }
 
   const [showUseGPT4Confirm, setShowUseGPT4Confirm] = useState(false)
-  const { locale } = useContext(I18n)
 
   const { eventEmitter } = useEventEmitterContextContext()
   const {
@@ -727,7 +732,7 @@ const Configuration: FC = () => {
       hasSetContextVar,
       isShowVisionConfig,
       visionConfig,
-      setVisionConfig,
+      setVisionConfig: handleSetVisionConfig,
     }}
     >
       <>
@@ -817,7 +822,7 @@ const Configuration: FC = () => {
                     )
                 }
               </div>
-              <div className='flex flex-col grow h-0 px-6 py-4 rounded-tl-2xl border-t border-l bg-gray-50 '>
+              <div className='flex flex-col grow h-0 rounded-tl-2xl border-t border-l bg-gray-50 '>
                 <Debug
                   hasSetAPIKEY={hasSettedApiKey}
                   onSetting={() => setShowAccountSettingModal({ payload: 'provider' })}
