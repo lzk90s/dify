@@ -1,10 +1,7 @@
 import enum
 import json
-from math import e
-import json
 from typing import List
 
-from flask_login import UserMixin
 from sqlalchemy import FetchedValue
 
 from core.sqltype import UUID, gen_uuid
@@ -159,6 +156,7 @@ class TenantAccountJoin(db.Model):
     id = db.Column(UUID, default=gen_uuid)
     tenant_id = db.Column(UUID, default=gen_uuid, nullable=False)
     account_id = db.Column(UUID, default=gen_uuid, nullable=False)
+    current = db.Column(db.Boolean, nullable=False, server_default=db.text('false'))
     role = db.Column(db.String(16), nullable=False, server_default=FetchedValue())
     invited_by = db.Column(UUID, default=gen_uuid, nullable=True, server_default=FetchedValue())
     created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())

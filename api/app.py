@@ -33,6 +33,7 @@ from flask import Flask, Response, request
 from flask_cors import CORS
 from libs.passport import PassportService
 # DO NOT REMOVE BELOW
+from models import account, dataset, model, source, task, tool, tools, web
 from services.account_service import AccountService
 
 # DO NOT REMOVE ABOVE
