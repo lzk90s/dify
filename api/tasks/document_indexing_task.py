@@ -8,7 +8,6 @@ from celery import shared_task
 from core.indexing_runner import DocumentIsPausedException, IndexingRunner
 from extensions.ext_database import db
 from models.dataset import Document
-from werkzeug.exceptions import NotFound
 
 
 @shared_task(queue='dataset')

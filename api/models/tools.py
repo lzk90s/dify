@@ -1,7 +1,6 @@
 import json
-from typing import List
 
-from sqlalchemy import ForeignKey, FetchedValue
+from sqlalchemy import FetchedValue, ForeignKey
 
 from core.sqltype import UUID, gen_uuid
 from core.tools.entities.common_entities import I18nObject
@@ -119,7 +118,7 @@ class ApiToolProvider(db.Model):
         return ApiProviderSchemaType.value_of(self.schema_type_str)
 
     @property
-    def tools(self) -> List[ApiBasedToolBundle]:
+    def tools(self) -> list[ApiBasedToolBundle]:
         return [ApiBasedToolBundle(**tool) for tool in json.loads(self.tools_str)]
 
     @property

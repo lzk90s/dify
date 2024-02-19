@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 from datetime import datetime
 from decimal import Decimal
 
@@ -16,7 +15,7 @@ from libs.helper import datetime_string
 from libs.login import login_required
 
 
-def format_date_sql(c):
+def format_date_sql(c: str):
     if is_postgresql():
         return f'date(DATE_TRUNC(\'day\', {c} AT TIME ZONE \'UTC\' AT TIME ZONE :tz ))'
     else:
@@ -39,7 +38,7 @@ class DailyConversationStatistic(Resource):
         args = parser.parse_args()
 
         sql_query = '''
-        SELECT {0} AS date, count(distinct messages.conversation_id) AS conversation_count
+        SELECT {} AS date, count(distinct messages.conversation_id) AS conversation_count
             FROM messages where app_id = :app_id 
         '''.format(format_date_sql('created_at'))
         arg_dict = {'tz': account.timezone, 'app_id': app_model.id}
@@ -100,7 +99,7 @@ class DailyTerminalsStatistic(Resource):
         args = parser.parse_args()
 
         sql_query = '''
-                SELECT {0} AS date, count(distinct messages.from_end_user_id) AS terminal_count
+                SELECT {} AS date, count(distinct messages.from_end_user_id) AS terminal_count
                     FROM messages where app_id = :app_id 
                 '''.format(format_date_sql('created_at'))
         arg_dict = {'tz': account.timezone, 'app_id': app_model.id}
@@ -160,7 +159,7 @@ class DailyTokenCostStatistic(Resource):
         args = parser.parse_args()
 
         sql_query = '''
-                SELECT {0} AS date, 
+                SELECT {} AS date, 
                     (sum(messages.message_tokens) + sum(messages.answer_tokens)) as token_count,
                     sum(total_price) as total_price
                     FROM messages where app_id = :app_id 
@@ -223,7 +222,7 @@ class AverageSessionInteractionStatistic(Resource):
         parser.add_argument('end', type=datetime_string('%Y-%m-%d %H:%M'), location='args')
         args = parser.parse_args()
 
-        sql_query = """SELECT {0} AS date, 
+        sql_query = """SELECT {} AS date, 
 AVG(subquery.message_count) AS interactions
 FROM (SELECT m.conversation_id, COUNT(m.id) AS message_count
     FROM conversations c
@@ -290,7 +289,7 @@ class UserSatisfactionRateStatistic(Resource):
         args = parser.parse_args()
 
         sql_query = '''
-                        SELECT {0} AS date, 
+                        SELECT {} AS date, 
                             COUNT(m.id) as message_count, COUNT(mf.id) as feedback_count 
                             FROM messages m
                             LEFT JOIN message_feedbacks mf on mf.message_id=m.id
@@ -353,7 +352,7 @@ class AverageResponseTimeStatistic(Resource):
         args = parser.parse_args()
 
         sql_query = '''
-                SELECT {0} AS date, 
+                SELECT {} AS date, 
                     AVG(provider_response_latency) as latency
                     FROM messages
                     WHERE app_id = :app_id
@@ -414,7 +413,7 @@ class TokensPerSecondStatistic(Resource):
         parser.add_argument('end', type=datetime_string('%Y-%m-%d %H:%M'), location='args')
         args = parser.parse_args()
 
-        sql_query = '''SELECT {0} AS date, 
+        sql_query = '''SELECT {} AS date, 
     CASE 
         WHEN SUM(provider_response_latency) = 0 THEN 0
         ELSE (SUM(answer_tokens) / SUM(provider_response_latency))

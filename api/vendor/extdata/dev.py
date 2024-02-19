@@ -1,5 +1,4 @@
-# coding: utf-8
-from typing import Union, Optional
+from typing import Optional, Union
 
 from vendor.extdata.api_client import ToolApiClient
 
@@ -50,20 +49,20 @@ class Device:
             return None
 
     def __check_upgrade(self, *args, **kwargs):
-        r = self.client.post(f'/tools/diagnose/firmwareOtaCheckDiagnose', json={
+        r = self.client.post('/tools/diagnose/firmwareOtaCheckDiagnose', json={
             'devId': self.dev_id
         })
         data = r.json()
         return data['result']['msg']
 
     def __get_ota_error_log(self, *args, **kwargs):
-        r = self.client.post(f'/tools/diagnose/firmwareOtaFailDiagnose', json={
+        r = self.client.post('/tools/diagnose/firmwareOtaFailDiagnose', json={
             'devId': self.dev_id
         })
         data = r.json()
         dg_id = data['result']['dgId']
 
-        r = self.client.get(f'/tools/diagnose/firmwareOtaFailDiagnose/logs', params={
+        r = self.client.get('/tools/diagnose/firmwareOtaFailDiagnose/logs', params={
             'dgId': dg_id,
             'devId': self.dev_id,
             'logLevel': 'error',

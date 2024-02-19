@@ -1,6 +1,5 @@
-# coding: utf-8
 import copy
-from typing import Optional, Any
+from typing import Any, Optional
 
 from langchain.embeddings.base import Embeddings
 

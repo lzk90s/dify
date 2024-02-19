@@ -1,10 +1,11 @@
 import json
 
+from flask import current_app
+from langchain.embeddings.base import Embeddings
+
 from core.index.vector_index.base import BaseVectorIndex
 from core.index.vector_index.starrocks_vector_index import StarRocksConfig
 from extensions.ext_database import db
-from flask import current_app
-from langchain.embeddings.base import Embeddings
 from models.dataset import Dataset, Document
 
 
@@ -26,7 +27,7 @@ class VectorIndex:
             vector_type = self._dataset.index_struct_dict['type']
 
         if not vector_type:
-            raise ValueError(f"Vector store must be specified.")
+            raise ValueError("Vector store must be specified.")
 
         if vector_type == "weaviate":
             from core.index.vector_index.weaviate_vector_index import WeaviateConfig, WeaviateVectorIndex

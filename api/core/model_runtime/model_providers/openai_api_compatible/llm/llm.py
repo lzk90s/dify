@@ -1,20 +1,30 @@
 import json
 import logging
-from decimal import Decimal
-from typing import Generator, List, Optional, Union, cast
+from collections.abc import Generator
+from typing import Optional, Union, cast
 from urllib.parse import urljoin
 
 import requests
 
 from core.model_runtime.entities.common_entities import I18nObject
 from core.model_runtime.entities.llm_entities import LLMMode, LLMResult, LLMResultChunk, LLMResultChunkDelta
-from core.model_runtime.entities.message_entities import (AssistantPromptMessage, ImagePromptMessageContent,
-                                                          PromptMessage, PromptMessageContent, PromptMessageContentType,
-                                                          PromptMessageFunction, PromptMessageTool, SystemPromptMessage,
-                                                          ToolPromptMessage, UserPromptMessage)
-from core.model_runtime.entities.model_entities import (AIModelEntity, DefaultParameterName, FetchFrom,
-                                                        ModelPropertyKey, ModelType, ParameterRule, ParameterType,
-                                                        PriceConfig)
+from core.model_runtime.entities.message_entities import (
+    AssistantPromptMessage,
+    ImagePromptMessageContent,
+    PromptMessage,
+    PromptMessageContent,
+    PromptMessageContentType,
+    PromptMessageFunction,
+    PromptMessageTool,
+    SystemPromptMessage,
+    ToolPromptMessage,
+    UserPromptMessage,
+)
+from core.model_runtime.entities.model_entities import (
+    AIModelEntity,
+    FetchFrom,
+    ModelType,
+)
 from core.model_runtime.errors.invoke import InvokeError
 from core.model_runtime.errors.validate import CredentialsValidateFailedError
 from core.model_runtime.model_providers.__base.large_language_model import LargeLanguageModel
@@ -31,7 +41,7 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
 
     def _invoke(self, model: str, credentials: dict,
                 prompt_messages: list[PromptMessage], model_parameters: dict,
-                tools: Optional[list[PromptMessageTool]] = None, stop: Optional[List[str]] = None,
+                tools: Optional[list[PromptMessageTool]] = None, stop: Optional[list[str]] = None,
                 stream: bool = True, user: Optional[str] = None) \
             -> Union[LLMResult, Generator]:
         """
@@ -139,16 +149,16 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                         f'Credentials validation failed: http error {json_result["errorMessage"]}')
                 json_result = json_result['data']
             except json.JSONDecodeError as e:
-                raise CredentialsValidateFailedError(f'Credentials validation failed: JSON decode error')
+                raise CredentialsValidateFailedError('Credentials validation failed: JSON decode error')
 
             if (completion_type is LLMMode.CHAT
                     and ('object' not in json_result or json_result['object'] != 'chat.completion')):
                 raise CredentialsValidateFailedError(
-                    f'Credentials validation failed: invalid response object, must be \'chat.completion\'')
+                    'Credentials validation failed: invalid response object, must be \'chat.completion\'')
             elif (completion_type is LLMMode.COMPLETION
                   and ('object' not in json_result or json_result['object'] != 'text_completion')):
                 raise CredentialsValidateFailedError(
-                    f'Credentials validation failed: invalid response object, must be \'text_completion\'')
+                    'Credentials validation failed: invalid response object, must be \'text_completion\'')
         except CredentialsValidateFailedError:
             raise
         except Exception as ex:
@@ -158,87 +168,45 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
         """
             generate custom model entities from credentials
         """
+        if not model.startswith('ft:'):
+            base_model = model
+        else:
+            # get base_model
+            base_model = model.split(':')[1]
+
+        # get model schema
+        models = self.predefined_models()
+        model_map = {model.model: model for model in models}
+        if base_model not in model_map:
+            raise ValueError(f'Base model {base_model} not found')
+
+        base_model_schema = model_map[base_model]
+
+        base_model_schema_features = base_model_schema.features or []
+        base_model_schema_model_properties = base_model_schema.model_properties or {}
+        base_model_schema_parameters_rules = base_model_schema.parameter_rules or []
+
         entity = AIModelEntity(
             model=model,
-            label=I18nObject(en_US=model),
+            label=I18nObject(
+                zh_Hans=model,
+                en_US=model
+            ),
             model_type=ModelType.LLM,
+            features=[feature for feature in base_model_schema_features],
             fetch_from=FetchFrom.CUSTOMIZABLE_MODEL,
             model_properties={
-                ModelPropertyKey.CONTEXT_SIZE: int(credentials.get('context_size', "4096")),
-                ModelPropertyKey.MODE: credentials.get('mode'),
+                key: property for key, property in base_model_schema_model_properties.items()
             },
-            parameter_rules=[
-                ParameterRule(
-                    name=DefaultParameterName.TEMPERATURE.value,
-                    label=I18nObject(en_US="Temperature"),
-                    type=ParameterType.FLOAT,
-                    default=float(credentials.get('temperature', 0.7)),
-                    min=0,
-                    max=2,
-                    precision=2
-                ),
-                ParameterRule(
-                    name=DefaultParameterName.TOP_P.value,
-                    label=I18nObject(en_US="Top P"),
-                    type=ParameterType.FLOAT,
-                    default=float(credentials.get('top_p', 1)),
-                    min=0,
-                    max=1,
-                    precision=2
-                ),
-                ParameterRule(
-                    name="top_k",
-                    label=I18nObject(en_US="Top K"),
-                    type=ParameterType.INT,
-                    default=int(credentials.get('top_k', 1)),
-                    min=1,
-                    max=100
-                ),
-                ParameterRule(
-                    name=DefaultParameterName.FREQUENCY_PENALTY.value,
-                    label=I18nObject(en_US="Frequency Penalty"),
-                    type=ParameterType.FLOAT,
-                    default=float(credentials.get('frequency_penalty', 0)),
-                    min=-2,
-                    max=2
-                ),
-                ParameterRule(
-                    name=DefaultParameterName.PRESENCE_PENALTY.value,
-                    label=I18nObject(en_US="Presence Penalty"),
-                    type=ParameterType.FLOAT,
-                    default=float(credentials.get('presence_penalty', 0)),
-                    min=-2,
-                    max=2
-                ),
-                ParameterRule(
-                    name=DefaultParameterName.MAX_TOKENS.value,
-                    label=I18nObject(en_US="Max Tokens"),
-                    type=ParameterType.INT,
-                    default=512,
-                    min=1,
-                    max=int(credentials.get('max_tokens_to_sample', 4096)),
-                )
-            ],
-            pricing=PriceConfig(
-                input=Decimal(credentials.get('input_price', 0)),
-                output=Decimal(credentials.get('output_price', 0)),
-                unit=Decimal(credentials.get('unit', 0)),
-                currency=credentials.get('currency', "USD")
-            )
+            parameter_rules=[rule for rule in base_model_schema_parameters_rules],
+            pricing=base_model_schema.pricing
         )
-
-        if credentials['mode'] == 'chat':
-            entity.model_properties[ModelPropertyKey.MODE] = LLMMode.CHAT.value
-        elif credentials['mode'] == 'completion':
-            entity.model_properties[ModelPropertyKey.MODE] = LLMMode.COMPLETION.value
-        else:
-            raise ValueError(f"Unknown completion type {credentials['completion_type']}")
 
         return entity
 
     # validate_credentials method has been rewritten to use the requests library for compatibility with all providers following OpenAI's API standard.
     def _generate(self, model: str, credentials: dict, prompt_messages: list[PromptMessage], model_parameters: dict,
-                  tools: Optional[list[PromptMessageTool]] = None, stop: Optional[List[str]] = None,
+                  tools: Optional[list[PromptMessageTool]] = None, stop: Optional[list[str]] = None,
                   stream: bool = True, \
                   user: Optional[str] = None) -> Union[LLMResult, Generator]:
         """
@@ -272,6 +240,9 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
             "sceneId": api_key,
             **model_parameters
         }
+
+        if 'mode' not in credentials:
+            credentials['mode'] = 'chat'
 
         completion_type = LLMMode.value_of(credentials['mode'])
 
@@ -362,13 +333,16 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
 
         for chunk in response.iter_lines(decode_unicode=True, delimiter=delimiter):
             if chunk:
+                # ignore sse comments
+                if chunk.startswith(':'):
+                    continue
                 decoded_chunk = chunk.strip().lstrip('data: ').lstrip()
                 chunk_json = None
                 try:
                     chunk_json = json.loads(decoded_chunk)
                 # stream ended
                 except json.JSONDecodeError as e:
-                    logger.error(f"decoded_chunk error,delimiter={delimiter},decoded_chunk={decoded_chunk}")
+                    logger.error(f"decoded_chunk error: {e}, delimiter={delimiter}, decoded_chunk={decoded_chunk}")
                     yield create_final_llm_result_chunk(
                         index=chunk_index + 1,
                         message=AssistantPromptMessage(content=""),
@@ -568,7 +542,7 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
 
         return num_tokens
 
-    def _num_tokens_from_messages(self, model: str, messages: List[PromptMessage],
+    def _num_tokens_from_messages(self, model: str, messages: list[PromptMessage],
                                   tools: Optional[list[PromptMessageTool]] = None) -> int:
         """
         Approximate num tokens with GPT2 tokenizer.

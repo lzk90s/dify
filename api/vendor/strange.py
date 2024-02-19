@@ -47,7 +47,7 @@ class StrangeClient:
 
     def dump_sk(self):
         if os.path.exists(self.sk_file):
-            with open(self.sk_file, 'r', encoding='utf-8') as file:
+            with open(self.sk_file, encoding='utf-8') as file:
                 content = file.read()
                 print(f'sk: {content}')
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Optional, Union
 
 from langchain.callbacks.manager import CallbackManagerForToolRun
 from langchain.tools import BaseTool
@@ -40,8 +40,8 @@ class OtaFailDiagnoseRun(BaseTool):
 class OtaFailDiagnoseTool(BuiltinTool):
     def _invoke(self,
                 user_id: str,
-                tool_paramters: Dict[str, Any],
-                ) -> Union[ToolInvokeMessage, List[ToolInvokeMessage]]:
+                tool_paramters: dict[str, Any],
+                ) -> Union[ToolInvokeMessage, list[ToolInvokeMessage]]:
         """
             invoke tools
         """

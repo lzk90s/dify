@@ -1,12 +1,11 @@
 import enum
 import json
-from typing import List
 
+from flask_login import UserMixin
 from sqlalchemy import FetchedValue
 
 from core.sqltype import UUID, gen_uuid
 from extensions.ext_database import db
-from flask_login import UserMixin
 
 
 class AccountStatus(str, enum.Enum):
@@ -97,7 +96,7 @@ class Account(UserMixin, db.Model):
                 one_or_none()
         return None
 
-    def get_integrates(self) -> List[db.Model]:
+    def get_integrates(self) -> list[db.Model]:
         ai = db.Model
         return db.session.query(ai).filter(
             ai.account_id == self.id
@@ -122,7 +121,7 @@ class Tenant(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
     updated_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
-    def get_accounts(self) -> List[db.Model]:
+    def get_accounts(self) -> list[db.Model]:
         Account = db.Model
         return db.session.query(Account).filter(
             Account.id == TenantAccountJoin.account_id,

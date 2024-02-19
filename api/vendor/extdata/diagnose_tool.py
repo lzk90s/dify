@@ -1,4 +1,3 @@
-# coding: utf-8
 import logging
 import re
 
@@ -64,7 +63,7 @@ class DiagnoseToolApi(Resource):
         # for debug
         log.info(f"app_id: {app_id}, tool_variable: {tool_variable}, inputs: {inputs}, query: {query}")
 
-        dev_id = inputs.get("devId") if 'devId' in inputs else None
+        dev_id = inputs.get("dev_id") if 'dev_id' in inputs else None
         if not dev_id:
             dev_id = self.parse_dev_id_from_query(query)
             log.info(f'parsed dev {dev_id} from query {query}')

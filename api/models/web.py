@@ -1,7 +1,8 @@
-from extensions.ext_database import db
 from sqlalchemy import FetchedValue
+from sqlalchemy.dialects.postgresql import UUID
 
-from core.sqltype import UUID, gen_uuid
+from core.sqltype import gen_uuid
+from extensions.ext_database import db
 from models.model import Message
 
 

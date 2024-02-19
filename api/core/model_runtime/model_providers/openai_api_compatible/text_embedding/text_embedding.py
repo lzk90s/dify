@@ -1,15 +1,14 @@
 import json
 import time
-from decimal import Decimal
 from typing import Optional
 from urllib.parse import urljoin
 
 import numpy as np
 import requests
 
-from core.model_runtime.entities.common_entities import I18nObject
-from core.model_runtime.entities.model_entities import (AIModelEntity, FetchFrom, ModelPropertyKey, ModelType,
-                                                        PriceConfig, PriceType)
+from core.model_runtime.entities.model_entities import (
+    PriceType,
+)
 from core.model_runtime.entities.text_embedding_entities import EmbeddingUsage, TextEmbeddingResult
 from core.model_runtime.errors.invoke import InvokeServerUnavailableError
 from core.model_runtime.errors.validate import CredentialsValidateFailedError
@@ -184,41 +183,41 @@ class OAICompatEmbeddingModel(_CommonOAI_API_Compat, TextEmbeddingModel):
             try:
                 json_result = response.json()
                 if json_result['errorCode']:
-                    raise CredentialsValidateFailedError(f'Credentials validation failed: http error')
+                    raise CredentialsValidateFailedError('Credentials validation failed: http error')
                 json_result = json_result['data']
             except json.JSONDecodeError as e:
-                raise CredentialsValidateFailedError(f'Credentials validation failed: JSON decode error')
+                raise CredentialsValidateFailedError('Credentials validation failed: JSON decode error')
 
             if 'model' not in json_result:
                 raise CredentialsValidateFailedError(
-                    f'Credentials validation failed: invalid response')
+                    'Credentials validation failed: invalid response')
         except CredentialsValidateFailedError:
             raise
         except Exception as ex:
             raise CredentialsValidateFailedError(str(ex))
 
-    def get_customizable_model_schema(self, model: str, credentials: dict) -> AIModelEntity:
-        """
-            generate custom model entities from credentials
-        """
-        entity = AIModelEntity(
-            model=model,
-            label=I18nObject(en_US=model),
-            model_type=ModelType.TEXT_EMBEDDING,
-            fetch_from=FetchFrom.CUSTOMIZABLE_MODEL,
-            model_properties={
-                ModelPropertyKey.CONTEXT_SIZE: int(credentials.get('context_size')),
-                ModelPropertyKey.MAX_CHUNKS: 1,
-            },
-            parameter_rules=[],
-            pricing=PriceConfig(
-                input=Decimal(credentials.get('input_price', 0)),
-                unit=Decimal(credentials.get('unit', 0)),
-                currency=credentials.get('currency', "USD")
-            )
-        )
-
-        return entity
+    # def get_customizable_model_schema(self, model: str, credentials: dict) -> AIModelEntity:
+    #     """
+    #         generate custom model entities from credentials
+    #     """
+    #     entity = AIModelEntity(
+    #         model=model,
+    #         label=I18nObject(en_US=model),
+    #         model_type=ModelType.TEXT_EMBEDDING,
+    #         fetch_from=FetchFrom.CUSTOMIZABLE_MODEL,
+    #         model_properties={
+    #             ModelPropertyKey.CONTEXT_SIZE: int(credentials.get('context_size')),
+    #             ModelPropertyKey.MAX_CHUNKS: 1,
+    #         },
+    #         parameter_rules=[],
+    #         pricing=PriceConfig(
+    #             input=Decimal(credentials.get('input_price', 0)),
+    #             unit=Decimal(credentials.get('unit', 0)),
+    #             currency=credentials.get('currency', "USD")
+    #         )
+    #     )
+    #
+    #     return entity
 
     def _calc_response_usage(self, model: str, credentials: dict, tokens: int) -> EmbeddingUsage:
         """

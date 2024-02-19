@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 import os
 
 import dotenv
@@ -92,7 +91,7 @@ class Config:
         # ------------------------
         # General Configurations.
         # ------------------------
-        self.CURRENT_VERSION = "0.5.3"
+        self.CURRENT_VERSION = "0.5.5"
         self.PORT = get_env('PORT')
         self.COMMIT_SHA = get_env('COMMIT_SHA')
         self.EDITION = "SELF_HOSTED"
@@ -225,6 +224,12 @@ class Config:
         self.MAIL_DEFAULT_SEND_FROM = get_env('MAIL_DEFAULT_SEND_FROM')
         self.RESEND_API_KEY = get_env('RESEND_API_KEY')
         self.RESEND_API_URL = get_env('RESEND_API_URL')
+# SMTP settings
+        self.SMTP_SERVER = get_env('SMTP_SERVER')
+        self.SMTP_PORT = get_env('SMTP_PORT')
+        self.SMTP_USERNAME = get_env('SMTP_USERNAME')
+        self.SMTP_PASSWORD = get_env('SMTP_PASSWORD')
+        self.SMTP_USE_TLS = get_bool_env('SMTP_USE_TLS')
 
         # ------------------------
         # Workpace Configurations.
