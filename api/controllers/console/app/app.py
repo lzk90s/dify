@@ -1,4 +1,3 @@
-import json
 import logging
 from datetime import datetime
 
@@ -47,7 +46,8 @@ class AppListApi(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('page', type=inputs.int_range(1, 99999), required=False, default=1, location='args')
         parser.add_argument('limit', type=inputs.int_range(1, 100), required=False, default=20, location='args')
-        parser.add_argument('mode', type=str, choices=['chat', 'completion', 'all'], default='all', location='args', required=False)
+        parser.add_argument('mode', type=str, choices=['chat', 'completion', 'all'], default='all', location='args',
+                            required=False)
         parser.add_argument('name', type=str, location='args', required=False)
         args = parser.parse_args()
 
@@ -180,7 +180,7 @@ class AppListApi(Resource):
                 model_dict = app_model_config.model_dict
                 model_dict['provider'] = model_instance.provider
                 model_dict['name'] = model_instance.model
-                app_model_config.model = json.dumps(model_dict)
+                app_model_config.model = model_dict
 
         app.name = args['name']
         app.mode = args['mode']
@@ -213,7 +213,7 @@ class AppListApi(Resource):
         app_was_created.send(app)
 
         return app, 201
-    
+
 
 class AppTemplateApi(Resource):
 

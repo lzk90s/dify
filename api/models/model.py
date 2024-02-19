@@ -7,10 +7,9 @@ from sqlalchemy import FetchedValue, Float, text
 
 from core.file.tool_file_parser import ToolFileParser
 from core.file.upload_file_parser import UploadFileParser
-from core.sqltype import UUID, gen_uuid
+from core.sqltype import UUID, gen_uuid, empty_json
 from extensions.ext_database import db
 from libs.helper import generate_string
-
 from .account import Account, Tenant
 
 
@@ -141,28 +140,28 @@ class AppModelConfig(db.Model):
     app_id = db.Column(UUID, default=gen_uuid, nullable=False)
     provider = db.Column(db.String(255), nullable=False)
     model_id = db.Column(db.String(255), nullable=False)
-    configs = db.Column(db.JSON, nullable=False)
+    configs = db.Column(db.JSON, default=empty_json(), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
     updated_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
-    opening_statement = db.Column(db.Text, server_default=FetchedValue())
-    suggested_questions = db.Column(db.Text, server_default=FetchedValue())
-    suggested_questions_after_answer = db.Column(db.Text, server_default=FetchedValue())
-    speech_to_text = db.Column(db.Text, server_default=FetchedValue())
-    text_to_speech = db.Column(db.Text, server_default=FetchedValue())
-    more_like_this = db.Column(db.Text, server_default=FetchedValue())
-    model = db.Column(db.Text, server_default=FetchedValue())
-    user_input_form = db.Column(db.Text, server_default=FetchedValue())
-    dataset_query_variable = db.Column(db.String(255), server_default=FetchedValue())
-    pre_prompt = db.Column(db.Text, server_default=FetchedValue())
-    agent_mode = db.Column(db.Text, server_default=FetchedValue())
-    sensitive_word_avoidance = db.Column(db.Text, server_default=FetchedValue())
-    retriever_resource = db.Column(db.Text, server_default=FetchedValue())
+    opening_statement = db.Column(db.JSON, default=empty_json(), nullable=True)
+    suggested_questions = db.Column(db.JSON, default=empty_json(), nullable=True)
+    suggested_questions_after_answer = db.Column(db.JSON, default=empty_json(), nullable=True)
+    speech_to_text = db.Column(db.JSON, default=empty_json(), nullable=True)
+    text_to_speech = db.Column(db.JSON, default=empty_json(), nullable=True)
+    more_like_this = db.Column(db.JSON, default=empty_json(), nullable=True)
+    model = db.Column(db.JSON, default=empty_json(), nullable=True)
+    user_input_form = db.Column(db.JSON, default=empty_json(), nullable=True)
+    dataset_query_variable = db.Column(db.JSON, default=empty_json(), nullable=True)
+    pre_prompt = db.Column(db.JSON, default=empty_json(), nullable=True)
+    agent_mode = db.Column(db.JSON, default=empty_json(), nullable=True)
+    sensitive_word_avoidance = db.Column(db.JSON, default=empty_json(), nullable=True)
+    retriever_resource = db.Column(db.JSON, default=empty_json(), nullable=True)
     prompt_type = db.Column(db.String(255), nullable=False, default='simple')
-    chat_prompt_config = db.Column(db.Text, server_default=FetchedValue())
-    completion_prompt_config = db.Column(db.Text, server_default=FetchedValue())
-    dataset_configs = db.Column(db.Text, server_default=FetchedValue())
-    external_data_tools = db.Column(db.Text, server_default=FetchedValue())
-    file_upload = db.Column(db.Text, server_default=FetchedValue())
+    chat_prompt_config = db.Column(db.JSON, default=empty_json(), nullable=True)
+    completion_prompt_config = db.Column(db.JSON, default=empty_json(), nullable=True)
+    dataset_configs = db.Column(db.JSON, default=empty_json(), nullable=True)
+    external_data_tools = db.Column(db.JSON, default=empty_json(), nullable=True)
+    file_upload = db.Column(db.JSON, default=empty_json(), nullable=True)
 
     @property
     def app(self):
@@ -171,30 +170,30 @@ class AppModelConfig(db.Model):
 
     @property
     def model_dict(self) -> dict:
-        return json.loads(self.model) if self.model else None
+        return self.model if self.model else None
 
     @property
     def suggested_questions_list(self) -> list:
-        return json.loads(self.suggested_questions) if self.suggested_questions else []
+        return self.suggested_questions if self.suggested_questions else []
 
     @property
     def suggested_questions_after_answer_dict(self) -> dict:
-        return json.loads(self.suggested_questions_after_answer) if self.suggested_questions_after_answer \
+        return self.suggested_questions_after_answer if self.suggested_questions_after_answer \
             else {"enabled": False}
 
     @property
     def speech_to_text_dict(self) -> dict:
-        return json.loads(self.speech_to_text) if self.speech_to_text \
+        return self.speech_to_text if self.speech_to_text \
             else {"enabled": False}
 
     @property
     def text_to_speech_dict(self) -> dict:
-        return json.loads(self.text_to_speech) if self.text_to_speech \
+        return self.text_to_speech if self.text_to_speech \
             else {"enabled": False}
 
     @property
     def retriever_resource_dict(self) -> dict:
-        return json.loads(self.retriever_resource) if self.retriever_resource \
+        return self.retriever_resource if self.retriever_resource \
             else {"enabled": False}
 
     @property
@@ -218,39 +217,39 @@ class AppModelConfig(db.Model):
 
     @property
     def more_like_this_dict(self) -> dict:
-        return json.loads(self.more_like_this) if self.more_like_this else {"enabled": False}
+        return self.more_like_this if self.more_like_this else {"enabled": False}
 
     @property
     def sensitive_word_avoidance_dict(self) -> dict:
-        return json.loads(self.sensitive_word_avoidance) if self.sensitive_word_avoidance \
+        return self.sensitive_word_avoidance if self.sensitive_word_avoidance \
             else {"enabled": False, "type": "", "configs": []}
 
     @property
     def external_data_tools_list(self) -> list[dict]:
-        return json.loads(self.external_data_tools) if self.external_data_tools \
+        return self.external_data_tools if self.external_data_tools \
             else []
 
     @property
     def user_input_form_list(self) -> dict:
-        return json.loads(self.user_input_form) if self.user_input_form else []
+        return self.user_input_form if self.user_input_form else []
 
     @property
     def agent_mode_dict(self) -> dict:
-        return json.loads(self.agent_mode) if self.agent_mode else {"enabled": False, "strategy": None, "tools": [],
-                                                                    "prompt": None}
+        return self.agent_mode if self.agent_mode else {"enabled": False, "strategy": None, "tools": [],
+                                                        "prompt": None}
 
     @property
     def chat_prompt_config_dict(self) -> dict:
-        return json.loads(self.chat_prompt_config) if self.chat_prompt_config else {}
+        return self.chat_prompt_config if self.chat_prompt_config else {}
 
     @property
     def completion_prompt_config_dict(self) -> dict:
-        return json.loads(self.completion_prompt_config) if self.completion_prompt_config else {}
+        return self.completion_prompt_config if self.completion_prompt_config else {}
 
     @property
     def dataset_configs_dict(self) -> dict:
         if self.dataset_configs:
-            dataset_configs = json.loads(self.dataset_configs)
+            dataset_configs = self.dataset_configs
             if 'retrieval_model' not in dataset_configs:
                 return {'retrieval_model': 'single'}
             else:
@@ -259,7 +258,7 @@ class AppModelConfig(db.Model):
 
     @property
     def file_upload_dict(self) -> dict:
-        return json.loads(self.file_upload) if self.file_upload else {
+        return self.file_upload if self.file_upload else {
             "image": {"enabled": False, "number_limits": 3, "detail": "high",
                       "transfer_methods": ["remote_url", "local_file"]}}
 
@@ -295,32 +294,32 @@ class AppModelConfig(db.Model):
         self.model_id = ""
         self.configs = {}
         self.opening_statement = model_config['opening_statement']
-        self.suggested_questions = json.dumps(model_config['suggested_questions'])
-        self.suggested_questions_after_answer = json.dumps(model_config['suggested_questions_after_answer'])
-        self.speech_to_text = json.dumps(model_config['speech_to_text']) \
+        self.suggested_questions = model_config['suggested_questions']
+        self.suggested_questions_after_answer = model_config['suggested_questions_after_answer']
+        self.speech_to_text = model_config['speech_to_text'] \
             if model_config.get('speech_to_text') else None
-        self.text_to_speech = json.dumps(model_config['text_to_speech']) \
+        self.text_to_speech = model_config['text_to_speech'] \
             if model_config.get('text_to_speech') else None
-        self.more_like_this = json.dumps(model_config['more_like_this'])
-        self.sensitive_word_avoidance = json.dumps(model_config['sensitive_word_avoidance']) \
+        self.more_like_this = model_config['more_like_this']
+        self.sensitive_word_avoidance = model_config['sensitive_word_avoidance'] \
             if model_config.get('sensitive_word_avoidance') else None
-        self.external_data_tools = json.dumps(model_config['external_data_tools']) \
+        self.external_data_tools = model_config['external_data_tools'] \
             if model_config.get('external_data_tools') else None
-        self.model = json.dumps(model_config['model'])
-        self.user_input_form = json.dumps(model_config['user_input_form'])
+        self.model = model_config['model']
+        self.user_input_form = model_config['user_input_form']
         self.dataset_query_variable = model_config.get('dataset_query_variable')
         self.pre_prompt = model_config['pre_prompt']
-        self.agent_mode = json.dumps(model_config['agent_mode'])
-        self.retriever_resource = json.dumps(model_config['retriever_resource']) \
+        self.agent_mode = model_config['agent_mode']
+        self.retriever_resource = model_config['retriever_resource'] \
             if model_config.get('retriever_resource') else None
         self.prompt_type = model_config.get('prompt_type', 'simple')
-        self.chat_prompt_config = json.dumps(model_config.get('chat_prompt_config')) \
+        self.chat_prompt_config = model_config.get('chat_prompt_config') \
             if model_config.get('chat_prompt_config') else None
-        self.completion_prompt_config = json.dumps(model_config.get('completion_prompt_config')) \
+        self.completion_prompt_config = model_config.get('completion_prompt_config') \
             if model_config.get('completion_prompt_config') else None
-        self.dataset_configs = json.dumps(model_config.get('dataset_configs')) \
+        self.dataset_configs = model_config.get('dataset_configs') \
             if model_config.get('dataset_configs') else None
-        self.file_upload = json.dumps(model_config.get('file_upload')) \
+        self.file_upload = model_config.get('file_upload') \
             if model_config.get('file_upload') else None
         return self
 
@@ -429,7 +428,7 @@ class Conversation(db.Model):
     app_id = db.Column(UUID, default=gen_uuid, nullable=False)
     app_model_config_id = db.Column(UUID, default=gen_uuid, nullable=False)
     model_provider = db.Column(db.String(255), nullable=False)
-    override_model_configs = db.Column(db.Text, server_default=FetchedValue())
+    override_model_configs = db.Column(db.JSON, default=empty_json(), nullable=True)
     model_id = db.Column(db.String(255), nullable=False)
     mode = db.Column(db.String(255), nullable=False)
     name = db.Column(db.String(255), nullable=False)
@@ -457,7 +456,7 @@ class Conversation(db.Model):
     def model_config(self):
         model_config = {}
         if self.override_model_configs:
-            override_model_configs = json.loads(self.override_model_configs)
+            override_model_configs = self.override_model_configs
 
             if 'model' in override_model_configs:
                 app_model_config = AppModelConfig()
@@ -563,7 +562,7 @@ class Message(db.Model):
     app_id = db.Column(UUID, nullable=False)
     model_provider = db.Column(db.String(255), nullable=False)
     model_id = db.Column(db.String(255), nullable=False)
-    override_model_configs = db.Column(db.Text, server_default=FetchedValue())
+    override_model_configs = db.Column(db.JSON, default=empty_json(), nullable=True)
     conversation_id = db.Column(UUID, db.ForeignKey('conversations.id'), nullable=False)
     inputs = db.Column(db.JSON)
     query = db.Column(db.Text, nullable=False)

@@ -22,15 +22,11 @@ def upgrade():
     with op.batch_alter_table('app_model_configs', schema=None) as batch_op:
         batch_op.add_column(sa.Column('prompt_type', sa.String(length=255), nullable=False,
                                       server_default='simple', comment='提示类型'))
-        batch_op.add_column(sa.Column('chat_prompt_config', sa.String(length=255), nullable=True,
-                                      server_default=sqltype.empty_text(), comment='聊天提示配置'))
+        batch_op.add_column(sa.Column('chat_prompt_config', sa.JSON(), nullable=True, comment='聊天提示配置'))
         batch_op.add_column(
-            sa.Column('completion_prompt_config', sa.String(length=255), nullable=True,
-                      server_default=sqltype.empty_text(),
-                      comment='完成提示配置'))
+            sa.Column('completion_prompt_config', sa.JSON(), nullable=True, comment='完成提示配置'))
         batch_op.add_column(
-            sa.Column('dataset_configs', sa.String(length=255), nullable=True, server_default=sqltype.empty_text(),
-                      comment='数据集配置'))
+            sa.Column('dataset_configs', sa.JSON(), nullable=True, comment='数据集配置'))
 
     # ### end Alembic commands ###
 

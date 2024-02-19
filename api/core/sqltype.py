@@ -96,3 +96,7 @@ def invalid_time():
 
 def empty_text():
     return sqlalchemy.text("''")
+
+
+def empty_json():
+    return ""

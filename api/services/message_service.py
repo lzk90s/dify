@@ -1,4 +1,3 @@
-import json
 from typing import Optional, Union
 
 from core.generator.llm_generator import LLMGenerator
@@ -209,7 +208,7 @@ class MessageService:
             if not app_model_config:
                 raise AppModelConfigBrokenError()
         else:
-            conversation_override_model_configs = json.loads(conversation.override_model_configs)
+            conversation_override_model_configs = conversation.override_model_configs
             app_model_config = AppModelConfig(
                 id=conversation.app_model_config_id,
                 app_id=app_model.id,

@@ -1,4 +1,3 @@
-import json
 from collections.abc import Generator
 from typing import Any, Union
 
@@ -72,7 +71,7 @@ class CompletionService:
                 if not app_model_config:
                     raise AppModelConfigBrokenError()
             else:
-                conversation_override_model_configs = json.loads(conversation.override_model_configs)
+                conversation_override_model_configs = conversation.override_model_configs
 
                 app_model_config = AppModelConfig(
                     id=conversation.app_model_config_id,
@@ -96,10 +95,10 @@ class CompletionService:
 
                 app_model_config_model = app_model_config.model_dict
                 app_model_config_model['completion_params'] = completion_params
-                app_model_config.retriever_resource = json.dumps({'enabled': True})
+                app_model_config.retriever_resource = {'enabled': True}
 
                 app_model_config = app_model_config.copy()
-                app_model_config.model = json.dumps(app_model_config_model)
+                app_model_config.model = app_model_config_model
         else:
             if app_model.app_model_config_id is None:
                 raise AppModelConfigBrokenError()
@@ -187,7 +186,7 @@ class CompletionService:
         completion_params = model_dict.get('completion_params')
         completion_params['temperature'] = 0.9
         model_dict['completion_params'] = completion_params
-        app_model_config.model = json.dumps(model_dict)
+        app_model_config.model = model_dict
 
         # parse files
         message_file_parser = MessageFileParser(tenant_id=app_model.tenant_id, app_id=app_model.id)

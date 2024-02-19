@@ -1,4 +1,3 @@
-import json
 import logging
 import threading
 import uuid
@@ -416,7 +415,6 @@ class ApplicationManager:
                 'datasets': []
             })
 
-
             for dataset in datasets.get('datasets', []):
                 keys = list(dataset.keys())
                 if len(keys) == 0 or keys[0] != 'dataset':
@@ -487,13 +485,18 @@ class ApplicationManager:
                 model_mode = copy_app_model_config_dict.get('model', {}).get('mode', 'completion')
                 if model_mode == 'completion':
                     agent_prompt_entity = AgentPromptEntity(
-                        first_prompt=agent_prompt.get('first_prompt', REACT_PROMPT_TEMPLATES['english']['completion']['prompt']),
-                        next_iteration=agent_prompt.get('next_iteration', REACT_PROMPT_TEMPLATES['english']['completion']['agent_scratchpad']),
+                        first_prompt=agent_prompt.get('first_prompt',
+                                                      REACT_PROMPT_TEMPLATES['english']['completion']['prompt']),
+                        next_iteration=agent_prompt.get('next_iteration',
+                                                        REACT_PROMPT_TEMPLATES['english']['completion'][
+                                                            'agent_scratchpad']),
                     )
                 else:
                     agent_prompt_entity = AgentPromptEntity(
-                        first_prompt=agent_prompt.get('first_prompt', REACT_PROMPT_TEMPLATES['english']['chat']['prompt']),
-                        next_iteration=agent_prompt.get('next_iteration', REACT_PROMPT_TEMPLATES['english']['chat']['agent_scratchpad']),
+                        first_prompt=agent_prompt.get('first_prompt',
+                                                      REACT_PROMPT_TEMPLATES['english']['chat']['prompt']),
+                        next_iteration=agent_prompt.get('next_iteration',
+                                                        REACT_PROMPT_TEMPLATES['english']['chat']['agent_scratchpad']),
                     )
 
                 properties['agent'] = AgentEntity(
@@ -515,7 +518,7 @@ class ApplicationManager:
                     dataset_ids=dataset_ids,
                     retrieve_config=DatasetRetrieveConfigEntity(
                         query_variable=query_variable,
-                            retrieve_strategy=DatasetRetrieveConfigEntity.RetrieveStrategy.value_of(
+                        retrieve_strategy=DatasetRetrieveConfigEntity.RetrieveStrategy.value_of(
                             dataset_configs['retrieval_model']
                         ),
                         single_strategy=datasets.get('strategy', 'router')
@@ -636,7 +639,7 @@ class ApplicationManager:
                 app_model_config_id=application_generate_entity.app_model_config_id,
                 model_provider=app_orchestration_config_entity.model_config.provider,
                 model_id=app_orchestration_config_entity.model_config.model,
-                override_model_configs=json.dumps(override_model_configs) if override_model_configs else None,
+                override_model_configs=override_model_configs if override_model_configs else None,
                 mode=app_mode,
                 name='New conversation',
                 inputs=application_generate_entity.inputs,
@@ -666,7 +669,7 @@ class ApplicationManager:
             app_id=app_record.id,
             model_provider=app_orchestration_config_entity.model_config.provider,
             model_id=app_orchestration_config_entity.model_config.model,
-            override_model_configs=json.dumps(override_model_configs) if override_model_configs else None,
+            override_model_configs=override_model_configs if override_model_configs else None,
             conversation_id=conversation.id,
             inputs=application_generate_entity.inputs,
             query=application_generate_entity.query or "",

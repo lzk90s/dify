@@ -40,8 +40,7 @@ def upgrade():
 
     with op.batch_alter_table('app_model_configs', schema=None) as batch_op:
         batch_op.add_column(
-            sa.Column('file_upload', sa.String(length=255), nullable=True, server_default=sqltype.empty_text(),
-                      comment='文件上传'))
+            sa.Column('file_upload', sa.JSON(), nullable=True, comment='文件上传'))
 
     with op.batch_alter_table('upload_files', schema=None) as batch_op:
         batch_op.add_column(

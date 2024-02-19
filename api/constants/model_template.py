@@ -26,7 +26,7 @@ model_templates = {
                     'frequency_penalty': 0,
                 }
             },
-            'model': json.dumps({
+            'model': {
                 "provider": "openai",
                 "name": "gpt-3.5-turbo-instruct",
                 "mode": "completion",
@@ -37,7 +37,7 @@ model_templates = {
                     "presence_penalty": 0,
                     "frequency_penalty": 0
                 }
-            }),
+            },
             'user_input_form': json.dumps([
                 {
                     "paragraph": {
@@ -77,7 +77,7 @@ model_templates = {
                     'frequency_penalty': 0,
                 }
             },
-            'model': json.dumps({
+            'model': {
                 "provider": "openai",
                 "name": "gpt-3.5-turbo",
                 "mode": "chat",
@@ -88,9 +88,7 @@ model_templates = {
                     "presence_penalty": 0,
                     "frequency_penalty": 0
                 }
-            })
+            }
         }
     },
 }
-
-

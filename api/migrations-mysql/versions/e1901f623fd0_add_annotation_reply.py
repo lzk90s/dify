@@ -37,8 +37,7 @@ def upgrade():
         batch_op.create_index('idx_app_annotation_hit_histories_app', ['app_id'], unique=False)
 
     with op.batch_alter_table('app_model_configs', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('annotation_reply', sa.String(length=255), nullable=True,
-                                      server_default=sqltype.empty_text(), comment='回复'))
+        batch_op.add_column(sa.Column('annotation_reply', sa.JSON(), nullable=True, comment='回复'))
 
     with op.batch_alter_table('dataset_collection_bindings', schema=None) as batch_op:
         batch_op.add_column(
