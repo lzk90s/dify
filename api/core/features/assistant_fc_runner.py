@@ -377,7 +377,7 @@ class AssistantFunctionCallApplicationRunner(BaseAssistantApplicationRunner):
             tool_calls.append((
                 prompt_message.id,
                 prompt_message.function.name,
-                json.loads(prompt_message.function.arguments),
+                json.loads(prompt_message.function.arguments) if prompt_message.function.arguments else {},
             ))
 
         return tool_calls

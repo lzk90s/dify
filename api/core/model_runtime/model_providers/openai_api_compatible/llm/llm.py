@@ -359,19 +359,24 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                 if 'delta' in choice:
                     delta = choice['delta']
                     delta_content = delta.get('content')
-                    if delta_content is None or delta_content == '':
-                        continue
 
                     assistant_message_tool_calls = delta.get('tool_calls', None)
                     # assistant_message_function_call = delta.delta.function_call
 
+                    if (delta_content is None or delta_content == '') and not assistant_message_tool_calls:
+                        continue
+
                     # extract tool calls from response
+                    tool_calls = []
                     if assistant_message_tool_calls:
                         tool_calls = self._extract_response_tool_calls(assistant_message_tool_calls)
                     # function_call = self._extract_response_function_call(assistant_message_function_call)
                     # tool_calls = [function_call] if function_call else []
 
                     # transform assistant message to prompt message
+                    if delta_content is None:
+                        delta_content = ''
+
                     assistant_prompt_message = AssistantPromptMessage(
                         content=delta_content,
                         tool_calls=tool_calls if assistant_message_tool_calls else []
@@ -494,14 +499,20 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
             message = cast(AssistantPromptMessage, message)
             message_dict = {"role": "assistant", "content": message.content}
             if message.tool_calls:
-                message_dict["tool_calls"] = [helper.dump_model(PromptMessageFunction(function=tool_call)) for tool_call
-                                              in
-                                              message.tool_calls]
-                # function_call = message.tool_calls[0]
-                # message_dict["function_call"] = {
-                #     "name": function_call.function.name,
-                #     "arguments": function_call.function.arguments,
-                # }
+                # message_dict["tool_calls"] = [helper.dump_model(PromptMessageFunction(function=tool_call)) for tool_call
+                #                               in
+                #                               message.tool_calls]
+                function_calls = message.tool_calls
+                message_dict["toolCalls"] = [
+                    {
+                        "type": "function",
+                        "id": function_call.id,
+                        "function": {
+                            "name": function_call.function.name,
+                            "arguments": function_call.function.arguments,
+                        }
+                    } for function_call in function_calls
+                ]
         elif isinstance(message, SystemPromptMessage):
             message = cast(SystemPromptMessage, message)
             message_dict = {"role": "system", "content": message.content}
@@ -510,7 +521,7 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
             message_dict = {
                 "role": "tool",
                 "content": message.content,
-                "tool_call_id": message.tool_call_id
+                "toolCallId": message.tool_call_id
             }
             # message_dict = {
             #     "role": "function",
@@ -652,6 +663,9 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
         tool_calls = []
         if response_tool_calls:
             for response_tool_call in response_tool_calls:
+                if 'function' not in response_tool_call or 'name' not in response_tool_call['function']:
+                    continue
+
                 function = AssistantPromptMessage.ToolCall.ToolCallFunction(
                     name=response_tool_call["function"]["name"],
                     arguments=response_tool_call["function"]["arguments"]

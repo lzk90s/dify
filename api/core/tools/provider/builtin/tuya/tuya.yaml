@@ -3,7 +3,7 @@ identity:
   name: tuya
   label:
     en_US: DeviceDiagnose
-    zh_Hans: 设备诊断
+    zh_Hans: 涂鸦设备诊断
     pt_BR: DeviceDiagnose
   description:
     en_US: It can diagnose problems such as device firmware upgrade, OTA, upgrade not detected, upgrade failure, upgrade timeout and other issues.
