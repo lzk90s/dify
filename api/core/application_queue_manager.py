@@ -6,6 +6,7 @@ from typing import Any
 
 from sqlalchemy.orm import DeclarativeMeta
 
+from core import sqltype
 from core.entities.application_entities import InvokeFrom
 from core.entities.queue_entities import (
     AnnotationReplyEvent,
@@ -166,7 +167,8 @@ class ApplicationQueueManager:
         :return:
         """
         self.publish(QueueAgentThoughtEvent(
-            agent_thought_id=message_agent_thought.id
+            agent_thought_id=message_agent_thought.id,
+            agent_thought=sqltype.model_to_dict(message_agent_thought)
         ), pub_from)
 
     def publish_message_file(self, message_file: MessageFile, pub_from: PublishFrom) -> None:

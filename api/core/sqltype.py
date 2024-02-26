@@ -100,3 +100,8 @@ def empty_text():
 
 def empty_json():
     return ""
+
+
+def model_to_dict(model) -> dict:
+    return {c.key: getattr(model, c.key)
+            for c in sqlalchemy.inspect(model).mapper.column_attrs}

@@ -43,7 +43,9 @@ DEFAULTS = {
     'LOG_LEVEL': 'INFO',
     'HOSTED_OPENAI_QUOTA_LIMIT': 200,
     'HOSTED_OPENAI_TRIAL_ENABLED': 'False',
+    'HOSTED_OPENAI_TRIAL_MODELS': '',
     'HOSTED_OPENAI_PAID_ENABLED': 'False',
+    'HOSTED_OPENAI_PAID_MODELS': '',
     'HOSTED_AZURE_OPENAI_ENABLED': 'False',
     'HOSTED_AZURE_OPENAI_QUOTA_LIMIT': 200,
     'HOSTED_ANTHROPIC_QUOTA_LIMIT': 600000,
@@ -61,6 +63,8 @@ DEFAULTS = {
     'BILLING_ENABLED': 'False',
     'CAN_REPLACE_LOGO': 'False',
     'ETL_TYPE': 'dify',
+    'KEYWORD_STORE': 'jieba',
+    'BATCH_UPLOAD_LIMIT': 20
 }
 
 
@@ -91,7 +95,7 @@ class Config:
         # ------------------------
         # General Configurations.
         # ------------------------
-        self.CURRENT_VERSION = "0.5.5"
+        self.CURRENT_VERSION = "0.5.6"
         self.PORT = get_env('PORT')
         self.COMMIT_SHA = get_env('COMMIT_SHA')
         self.EDITION = "SELF_HOSTED"
@@ -192,7 +196,7 @@ class Config:
         # Currently, only support: qdrant, milvus, zilliz, weaviate
         # ------------------------
         self.VECTOR_STORE = get_env('VECTOR_STORE')
-
+        self.KEYWORD_STORE = get_env('KEYWORD_STORE')
         # qdrant settings
         self.QDRANT_URL = get_env('QDRANT_URL')
         self.QDRANT_API_KEY = get_env('QDRANT_API_KEY')
@@ -275,8 +279,10 @@ class Config:
         self.HOSTED_OPENAI_API_BASE = get_env('HOSTED_OPENAI_API_BASE')
         self.HOSTED_OPENAI_API_ORGANIZATION = get_env('HOSTED_OPENAI_API_ORGANIZATION')
         self.HOSTED_OPENAI_TRIAL_ENABLED = get_bool_env('HOSTED_OPENAI_TRIAL_ENABLED')
+        self.HOSTED_OPENAI_TRIAL_MODELS = get_env('HOSTED_OPENAI_TRIAL_MODELS')
         self.HOSTED_OPENAI_QUOTA_LIMIT = int(get_env('HOSTED_OPENAI_QUOTA_LIMIT'))
         self.HOSTED_OPENAI_PAID_ENABLED = get_bool_env('HOSTED_OPENAI_PAID_ENABLED')
+        self.HOSTED_OPENAI_PAID_MODELS = get_env('HOSTED_OPENAI_PAID_MODELS')
 
         self.HOSTED_AZURE_OPENAI_ENABLED = get_bool_env('HOSTED_AZURE_OPENAI_ENABLED')
         self.HOSTED_AZURE_OPENAI_API_KEY = get_env('HOSTED_AZURE_OPENAI_API_KEY')
@@ -300,6 +306,8 @@ class Config:
         self.UNSTRUCTURED_API_URL = get_env('UNSTRUCTURED_API_URL')
         self.BILLING_ENABLED = get_bool_env('BILLING_ENABLED')
         self.CAN_REPLACE_LOGO = get_bool_env('CAN_REPLACE_LOGO')
+
+        self.BATCH_UPLOAD_LIMIT = get_env('BATCH_UPLOAD_LIMIT')
 
 
 class CloudEditionConfig(Config):

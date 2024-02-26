@@ -297,12 +297,8 @@ class GenerateTaskPipeline:
 
                     self._task_state.llm_result.message.content = annotation.content
             elif isinstance(event, QueueAgentThoughtEvent):
-                agent_thought: MessageAgentThought = (
-                    db.session.query(MessageAgentThought)
-                    .filter(MessageAgentThought.id == event.agent_thought_id)
-                    .first()
-                )
-                db.session.refresh(agent_thought)
+                agent_thought: MessageAgentThought = MessageAgentThought(**event.agent_thought)
+                # db.session.refresh(agent_thought)
 
                 if agent_thought:
                     response = {

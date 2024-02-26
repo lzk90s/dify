@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any
+from typing import Any, Optional
 
 from pydantic import BaseModel
 
@@ -83,6 +83,8 @@ class QueueAgentThoughtEvent(AppQueueEvent):
     """
     event = QueueEvent.AGENT_THOUGHT
     agent_thought_id: str
+    agent_thought: dict
+
 
 class QueueMessageFileEvent(AppQueueEvent):
     """
