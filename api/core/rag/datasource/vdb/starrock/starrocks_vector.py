@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any
 
 from langchain.schema import Document
 from pydantic import BaseModel

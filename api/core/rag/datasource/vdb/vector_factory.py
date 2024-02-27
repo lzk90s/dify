@@ -95,7 +95,7 @@ class Vector:
                 )
             )
         elif vector_type == "starrocks":
-            from core.rag.datasource.vdb.starrock.starrocks_vector import StarRocksVector, StarRocksConfig
+            from core.rag.datasource.vdb.starrock.starrocks_vector import StarRocksConfig, StarRocksVector
 
             return StarRocksVector(
                 dataset=dataset,

@@ -274,7 +274,7 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
         response = requests.post(
             endpoint_url,
             headers=headers,
-            json=data,
+            json=self.dict_to_camel_case(data),
             timeout=(10, 60),
             stream=stream,
             verify=False
@@ -331,6 +331,7 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
         delimiter = credentials.get("stream_mode_delimiter", "\n\n")
         delimiter = codecs.decode(delimiter, "unicode_escape")
 
+        delta_assistant_message_function_call_storage = None
         for chunk in response.iter_lines(decode_unicode=True, delimiter=delimiter):
             if chunk:
                 # ignore sse comments
@@ -355,43 +356,50 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                 finish_reason = chunk_json['choices'][0].get('finish_reason')
                 chunk_index += 1
 
-                if 'delta' in choice:
+                delta_content = None
+                assistant_message_tool_calls = None
+                if 'delta' in choice and choice['delta']:
                     delta = choice['delta']
-                    delta_content = delta.get('content')
-
+                    delta_content = delta.get('content', '')
                     assistant_message_tool_calls = delta.get('tool_calls', None)
-                    # assistant_message_function_call = delta.delta.function_call
-
-                    if (delta_content is None or delta_content == '') and not assistant_message_tool_calls:
-                        continue
-
-                    # extract tool calls from response
-                    tool_calls = []
-                    if assistant_message_tool_calls:
-                        tool_calls = self._extract_response_tool_calls(assistant_message_tool_calls)
-                    # function_call = self._extract_response_function_call(assistant_message_function_call)
-                    # tool_calls = [function_call] if function_call else []
-
-                    # transform assistant message to prompt message
-                    if delta_content is None:
-                        delta_content = ''
-
-                    assistant_prompt_message = AssistantPromptMessage(
-                        content=delta_content,
-                        tool_calls=tool_calls if assistant_message_tool_calls else []
-                    )
-
                     full_assistant_content += delta_content
-                elif 'text' in choice:
+                elif 'text' in choice and choice['text']:
                     choice_text = choice.get('text', '')
-                    if choice_text == '':
-                        continue
-
-                    # transform assistant message to prompt message
-                    assistant_prompt_message = AssistantPromptMessage(content=choice_text)
+                    delta_content = choice_text
                     full_assistant_content += choice_text
-                else:
+
+                if (not finish_reason and (delta_content is None or delta_content == '') and
+                        assistant_message_tool_calls is None):
                     continue
+
+                # extract tool calls from response
+                if delta_assistant_message_function_call_storage is not None:
+                    # handle process of stream function call
+                    if assistant_message_tool_calls:
+                        for idx, v in enumerate(assistant_message_tool_calls):
+                            delta_assistant_message_function_call_storage[idx]['function']['arguments'] \
+                                += assistant_message_tool_calls[idx]['function']['arguments']
+                        continue
+                    else:
+                        # message has ended
+                        assistant_message_tool_calls = delta_assistant_message_function_call_storage
+                        delta_assistant_message_function_call_storage = None
+                else:
+                    if assistant_message_tool_calls:
+                        # start of stream function call
+                        delta_assistant_message_function_call_storage = assistant_message_tool_calls
+                        if not finish_reason:
+                            continue
+
+                # extract tool calls from response
+                tool_calls = []
+                if assistant_message_tool_calls:
+                    tool_calls = self._extract_response_tool_calls(assistant_message_tool_calls)
+
+                assistant_prompt_message = AssistantPromptMessage(
+                    content=delta_content if delta_content else '',
+                    tool_calls=tool_calls if assistant_message_tool_calls else []
+                )
 
                 # check payload indicator for completion
                 if finish_reason is not None:
@@ -662,9 +670,6 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
         tool_calls = []
         if response_tool_calls:
             for response_tool_call in response_tool_calls:
-                if 'function' not in response_tool_call or 'name' not in response_tool_call['function']:
-                    continue
-
                 function = AssistantPromptMessage.ToolCall.ToolCallFunction(
                     name=response_tool_call["function"]["name"],
                     arguments=response_tool_call["function"]["arguments"]
@@ -678,3 +683,20 @@ class OAIAPICompatLargeLanguageModel(_CommonOAI_API_Compat, LargeLanguageModel):
                 tool_calls.append(tool_call)
 
         return tool_calls
+
+    @classmethod
+    def dict_to_camel_case(cls, d):
+        def to_camel_case(snake_str):
+            components = snake_str.split('_')
+            # 如果是单个词则保持其样式，否则将第一个词保持原样，其余词首字母大写
+            return components[0] + ''.join(x.title() for x in components[1:])
+
+        def transform_key(k):
+            return to_camel_case(k) if isinstance(k, str) else k
+
+        if isinstance(d, dict):
+            return {transform_key(k): cls.dict_to_camel_case(v) for k, v in d.items()}
+        elif isinstance(d, list):
+            return [cls.dict_to_camel_case(v) for v in d]
+        else:
+            return d

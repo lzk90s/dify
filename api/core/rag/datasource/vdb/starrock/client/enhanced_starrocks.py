@@ -1,8 +1,6 @@
 import copy
 from typing import Any, Optional
 
-from langchain.embeddings.base import Embeddings
-
 from core.rag.datasource.vdb.starrock.client.starrocks import StarRocks, StarRocksSettings, get_named_result
 
 
