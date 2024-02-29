@@ -5,6 +5,7 @@ from flask import current_app, request
 from flask_login import UserMixin
 from sqlalchemy import FetchedValue, Float, text
 
+from core import sqltype
 from core.file.tool_file_parser import ToolFileParser
 from core.file.upload_file_parser import UploadFileParser
 from core.sqltype import UUID, empty_json, gen_uuid
@@ -397,7 +398,7 @@ class InstalledApp(db.Model):
     app_owner_tenant_id = db.Column(UUID, default=gen_uuid, nullable=False)
     position = db.Column(db.Integer, nullable=False, default=0)
     is_pinned = db.Column(db.Boolean, nullable=False, server_default=FetchedValue())
-    last_used_at = db.Column(db.DateTime, nullable=True)
+    last_used_at = db.Column(db.DateTime, nullable=True, server_default=FetchedValue())
     created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
     @property
@@ -989,8 +990,8 @@ class MessageChain(db.Model):
     id = db.Column(UUID, default=gen_uuid, nullable=False, server_default=FetchedValue())
     message_id = db.Column(UUID, default=gen_uuid, nullable=False)
     type = db.Column(db.String(255), nullable=False)
-    input = db.Column(db.Text, nullable=True, server_default=FetchedValue())
-    output = db.Column(db.Text, nullable=True, server_default=FetchedValue())
+    input = db.Column(db.JSON(), default=sqltype.empty_json(), nullable=True, server_default=FetchedValue())
+    output = db.Column(db.JSON(), default=sqltype.empty_json(), nullable=True, server_default=FetchedValue())
     created_at = db.Column(db.DateTime, nullable=False, server_default=FetchedValue())
 
 

@@ -96,7 +96,6 @@ def create_app(test_config=None) -> Flask:
     initialize_extensions(app)
     register_blueprints(app)
     register_commands(app)
-    register_tools(app)
 
     return app
 
@@ -151,14 +150,6 @@ def unauthorized_handler():
         'message': "Unauthorized."
     }), status=401, content_type="application/json")
 
-
-def register_tools(app):
-    from vendor.extdata import bp as tools_bp
-    CORS(tools_bp,
-         allow_headers=['Content-Type'],
-         methods=['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'PATCH']
-         )
-    app.register_blueprint(tools_bp)
 
 
 # register blueprint routers

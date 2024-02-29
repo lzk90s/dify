@@ -550,10 +550,8 @@ def upgrade():
                     sa.Column('id', UUID(), nullable=False, comment='ID'),
                     sa.Column('message_id', UUID(), nullable=False, comment='消息ID'),
                     sa.Column('type', sa.String(length=255), nullable=False, comment='类型'),
-                    sa.Column('input', sa.String(length=2048), nullable=True, server_default=sqltype.empty_text(),
-                              comment='输入'),
-                    sa.Column('output', sa.String(length=2048), nullable=True, server_default=sqltype.empty_text(),
-                              comment='输出'),
+                    sa.Column('input', sa.JSON(), nullable=True, comment='输入'),
+                    sa.Column('output', sa.JSON(), nullable=True, comment='输出'),
                     sa.Column('created_at', sa.DateTime(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False,
                               comment='创建时间'),
                     sa.PrimaryKeyConstraint('id', name='message_chain_pkey')

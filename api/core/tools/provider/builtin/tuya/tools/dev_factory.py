@@ -1,6 +1,6 @@
 from typing import Optional, Union
 
-from vendor.extdata.api_client import ToolApiClient
+from core.tools.provider.builtin.tuya.tools.api_client import ToolApiClient
 
 
 class DeviceNotExistError(Exception):
@@ -57,7 +57,9 @@ class Device:
 
     def __get_ota_error_log(self, *args, **kwargs):
         r = self.client.post('/tools/diagnose/firmwareOtaFailDiagnose', json={
-            'devId': self.dev_id
+            'devId': self.dev_id,
+            'maxTime': 1800,
+            'delayFlag': True
         })
         data = r.json()
         dg_id = data['result']['dgId']

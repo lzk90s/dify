@@ -159,9 +159,9 @@ class ToolModelInvoke(db.Model):
     # tool name
     tool_name = db.Column(db.String(40), nullable=False)
     # invoke parameters
-    model_parameters = db.Column(db.Text, nullable=False)
+    model_parameters = db.Column(db.JSON(), nullable=False)
     # prompt messages
-    prompt_messages = db.Column(db.Text, nullable=False)
+    prompt_messages = db.Column(db.JSON(), nullable=False)
     # invoke response
     model_response = db.Column(db.Text, nullable=False)
 

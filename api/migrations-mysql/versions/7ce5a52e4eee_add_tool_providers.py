@@ -36,7 +36,7 @@ def upgrade():
                     sa.UniqueConstraint('tenant_id', 'tool_name', name='unq_tool_provider_tool_name')
                     )
     with op.batch_alter_table('app_model_configs', schema=None) as batch_op:
-        batch_op.add_column(sa.Column('sensitive_word_avoidance', sa.String(length=255), nullable=True))
+        batch_op.add_column(sa.Column('sensitive_word_avoidance', sa.JSON(), nullable=True, comment='敏感词'))
 
     # ### end Alembic commands ###
 

@@ -300,9 +300,9 @@ class AssistantApplicationRunner(AppRunner):
         message_chain = MessageChain(
             message_id=message.id,
             type="AgentExecutor",
-            input=json.dumps({
+            input={
                 "input": query
-            })
+            }
         )
 
         db.session.add(message_chain)
@@ -317,9 +317,9 @@ class AssistantApplicationRunner(AppRunner):
         :param output_text: output text
         :return:
         """
-        message_chain.output = json.dumps({
+        message_chain.output = {
             "output": output_text
-        })
+        }
         db.session.commit()
 
     def _get_usage_of_all_agent_thoughts(self, model_config: ModelConfigEntity,

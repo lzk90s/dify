@@ -5,18 +5,12 @@ from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
 
 from core.tools.entities.tool_entities import ToolInvokeMessage
+from core.tools.provider.builtin.tuya.tools.dev_factory import DeviceFactory, DeviceNotExistError
 from core.tools.tool.builtin_tool import BuiltinTool
 
 
 class OtaDiagnoseInput(BaseModel):
     dev_id: str = Field(..., description="device id.")
-
-
-class OtaFailApiWrapper(BaseModel):
-
-    def run(self, dev_id: str) -> str:
-        """Run Wikipedia search and get page summaries."""
-        return 'failed to malloc memory'
 
 
 class OtaFailDiagnoseRun(BaseTool):
@@ -26,32 +20,32 @@ class OtaFailDiagnoseRun(BaseTool):
         "Useful for when you need to diagnose device ota issues "
         "Input should be a device id."
     )
-    api_wrapper: OtaFailApiWrapper
 
     def _run(
             self,
             dev_id: str,
             run_manager: Optional[CallbackManagerForToolRun] = None,
     ) -> str:
-        """Use the Wikipedia tool."""
-        return self.api_wrapper.run(dev_id)
+        try:
+            return 'reason:' + DeviceFactory.find_dev_by_id(dev_id).diagnose('OTA_FAIL')
+        except DeviceNotExistError as e:
+            return 'device not exist!'
 
 
 class OtaFailDiagnoseTool(BuiltinTool):
     def _invoke(self,
                 user_id: str,
-                tool_paramters: dict[str, Any],
+                tool_parameters: dict[str, Any],
                 ) -> Union[ToolInvokeMessage, list[ToolInvokeMessage]]:
         """
             invoke tools
         """
-        dev_id = tool_paramters.get('dev', '')
+        dev_id = tool_parameters.get('dev', '')
         if not dev_id:
             return self.create_text_message('Please input device id')
 
         tool = OtaFailDiagnoseRun(
             name="OTA fail diagnose",
-            api_wrapper=OtaFailApiWrapper(doc_content_chars_max=4000),
             args_schema=OtaDiagnoseInput
         )
 
